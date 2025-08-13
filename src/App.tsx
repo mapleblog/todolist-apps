@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
-import { TodoProvider } from './contexts/TodoContext';
+import TodoProvider from './contexts/TodoContext';
 import { ProtectedRoute, AppLayout } from './components';
 import OfflineIndicator from './components/common/OfflineIndicator';
 

@@ -610,12 +610,8 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
 };
 
 // Custom hook to use todo context
-export const useTodos = (): TodoContextType => {
-  const context = useContext(TodoContext);
-  if (context === undefined) {
-    throw new Error('useTodos must be used within a TodoProvider');
-  }
-  return context;
-};
+// Export the context for use in custom hooks
+export { TodoContext };
 
-export default TodoContext;
+// Default export should be the provider for better Fast Refresh compatibility
+export default TodoProvider;

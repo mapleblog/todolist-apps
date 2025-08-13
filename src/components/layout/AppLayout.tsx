@@ -1,28 +1,20 @@
 import React, { useState } from 'react';
 import {
   Box,
-  AppBar,
-  Toolbar,
   Typography,
   useTheme,
-  useMediaQuery,
-  IconButton
+  useMediaQuery
 } from '@mui/material';
-import { Menu as MenuIcon } from '@mui/icons-material';
-import { UserProfile } from '../auth';
+
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from './Sidebar';
 import { DashboardPage, ProjectsPage, StudyPage, TodoPage } from '../../pages';
 interface AppLayoutProps {
   children: React.ReactNode;
-  title?: string;
-  showUserProfile?: boolean;
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({
-  children,
-  title = 'TodoList',
-  showUserProfile = true
+  children
 }) => {
   const { user } = useAuth();
   const theme = useTheme();
@@ -72,77 +64,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
       {/* Main Layout */}
       <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
-      {/* App Bar */}
-      <AppBar
-        position="sticky"
-        elevation={1}
-        sx={{
-          backgroundColor: 'background.paper',
-          color: 'text.primary',
-          borderBottom: '1px solid',
-          borderColor: 'divider'
-        }}
-      >
-        <Toolbar
-          sx={{
-            justifyContent: 'space-between',
-            px: { xs: 2, sm: 3 }
-          }}
-        >
-          {/* Menu Button and Logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {isAuthenticated && (
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={handleSidebarToggle}
-                sx={{
-                  display: { md: 'none' },
-                  color: 'text.primary'
-                }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-            <Typography
-              variant={isMobile ? 'h6' : 'h5'}
-              component="h1"
-              sx={{
-                fontWeight: 'bold',
-                color: 'primary.main',
-                cursor: 'pointer',
-                '&:hover': {
-                  opacity: 0.8
-                }
-              }}
-            >
-              {title}
-            </Typography>
-            {!isMobile && isAuthenticated && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  ml: 1,
-                  px: 1.5,
-                  py: 0.5,
-                  backgroundColor: 'action.hover',
-                  borderRadius: 1,
-                  fontSize: '0.75rem'
-                }}
-              >
-                Personal Workspace
-              </Typography>
-            )}
-          </Box>
 
-          {/* User Profile */}
-          {showUserProfile && isAuthenticated && (
-            <UserProfile variant="compact" showMenu={true} />
-          )}
-        </Toolbar>
-      </AppBar>
 
       {/* Main Content */}
       <Box

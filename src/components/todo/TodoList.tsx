@@ -32,7 +32,7 @@ import {
   ExpandMore,
   Folder as FolderIcon
 } from '@mui/icons-material';
-import { useTodos } from '../../contexts/TodoContext';
+import { useTodos } from '../../hooks/useTodos';
 import { Todo, TodoPriority, TodoFilter } from '../../types';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
 

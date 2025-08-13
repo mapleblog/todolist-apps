@@ -61,6 +61,11 @@ const saveUserToFirestore = async (firebaseUser: FirebaseUser, isNewUser = false
  */
 export const signInWithGoogle = async (): Promise<User> => {
   try {
+    // Configure popup settings to handle CORS issues
+    const popupOptions = {
+      // Add any additional popup configuration if needed
+    };
+    
     const result: UserCredential = await signInWithPopup(auth, googleProvider);
     const firebaseUser = result.user;
     
@@ -92,7 +97,16 @@ export const signInWithGoogle = async (): Promise<User> => {
         throw new Error('Network error. Please check your internet connection and try again.');
       case 'auth/too-many-requests':
         throw new Error('Too many failed attempts. Please try again later.');
+      case 'auth/unauthorized-domain':
+        throw new Error('This domain is not authorized for authentication. Please contact support.');
+      case 'auth/operation-not-allowed':
+        throw new Error('Google sign-in is not enabled. Please contact support.');
       default:
+        // Handle Cross-Origin-Opener-Policy errors
+        if (firebaseError.message.includes('Cross-Origin-Opener-Policy') || 
+            firebaseError.message.includes('window.closed')) {
+          throw new Error('Authentication popup was blocked by browser security policy. Please try again or use a different browser.');
+        }
         throw new Error(firebaseError.message || 'Failed to sign in with Google');
     }
   }

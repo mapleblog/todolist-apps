@@ -55,29 +55,9 @@ export class NetworkStatusService {
   }
 
   private async verifyConnectivity(): Promise<void> {
-    try {
-      // Try to fetch a small resource with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-      const response = await fetch('/favicon.ico', {
-        method: 'HEAD',
-        cache: 'no-cache',
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (response.ok || response.status === 404) {
-        // 404 is fine, it means we can reach the server
-        this.setStatus('online');
-      } else {
-        this.setStatus('offline');
-      }
-    } catch (error) {
-      // Network error or timeout
-      this.setStatus('offline');
-    }
+    // Use navigator.onLine as the primary indicator
+    // Avoid making HTTP requests that could cause CORS issues
+    this.setStatus(navigator.onLine ? 'online' : 'offline');
   }
 
   private setStatus(status: NetworkStatus): void {
@@ -149,25 +129,21 @@ export class NetworkStatusService {
       return 'offline';
     }
 
-    try {
-      const startTime = Date.now();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-      await fetch('/favicon.ico', {
-        method: 'HEAD',
-        cache: 'no-cache',
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-      const duration = Date.now() - startTime;
-
-      // Simple heuristic: < 1000ms = fast, >= 1000ms = slow
-      return duration < 1000 ? 'fast' : 'slow';
-    } catch (error) {
-      return 'offline';
+    // Use navigator connection API if available, otherwise return 'fast'
+    if ('connection' in navigator) {
+      const connection = (navigator as any).connection;
+      if (connection) {
+        // Use effective connection type if available
+        const effectiveType = connection.effectiveType;
+        if (effectiveType === 'slow-2g' || effectiveType === '2g') {
+          return 'slow';
+        }
+        return 'fast';
+      }
     }
+    
+    // Fallback: assume fast connection if online, offline if not
+    return navigator.onLine ? 'fast' : 'offline';
   }
 
   // Cleanup method

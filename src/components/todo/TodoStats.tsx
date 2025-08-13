@@ -23,7 +23,7 @@ import {
   Today as TodayIcon
 } from '@mui/icons-material';
 import { TodoPriority } from '../../types';
-import { useTodos } from '../../contexts/TodoContext';
+import { useTodos } from '../../hooks/useTodos';
 import { isBefore, startOfDay, isToday, isTomorrow, addDays } from 'date-fns';
 
 interface TodoStatsProps {

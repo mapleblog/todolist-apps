@@ -39,7 +39,7 @@ import {
   AreaChart
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
-import { useTodos } from '../contexts/TodoContext';
+import { useTodos } from '../hooks/useTodos';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();

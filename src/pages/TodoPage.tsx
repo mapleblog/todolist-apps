@@ -31,7 +31,7 @@ import {
   TodoFilter,
   TodoSort
 } from '../components/todo';
-import { useTodos } from '../contexts/TodoContext';
+import { useTodos } from '../hooks/useTodos';
 import { useAuth } from '../contexts/AuthContext';
 
 const TodoPage: React.FC = () => {

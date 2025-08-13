@@ -48,6 +48,9 @@ export const googleProvider = new GoogleAuthProvider();
 // Configure Google Auth Provider
 googleProvider.setCustomParameters({
   prompt: 'select_account',
+  // Add popup configuration to handle CORS issues
+  popup_type: 'popup',
+  ux_mode: 'popup'
 });
 
 // Initialize Analytics (optional, only in production)

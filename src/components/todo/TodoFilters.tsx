@@ -27,7 +27,7 @@ import {
 
 } from '@mui/icons-material';
 import { TodoFilter, TodoSort } from '../../types';
-import { useTodos } from '../../contexts/TodoContext';
+import { useTodos } from '../../hooks/useTodos';
 
 interface TodoFiltersProps {
   searchQuery: string;

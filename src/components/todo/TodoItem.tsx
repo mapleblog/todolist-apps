@@ -33,7 +33,7 @@ import {
   CalendarToday as CalendarTodayIcon
 } from '@mui/icons-material';
 import { Todo, TodoPriority } from '../../types';
-import { useTodos } from '../../contexts/TodoContext';
+import { useTodos } from '../../hooks/useTodos';
 import { formatDistanceToNow, format, isAfter, isBefore, startOfDay } from 'date-fns';
 
 interface TodoItemProps {
