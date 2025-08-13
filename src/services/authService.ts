@@ -61,11 +61,6 @@ const saveUserToFirestore = async (firebaseUser: FirebaseUser, isNewUser = false
  */
 export const signInWithGoogle = async (): Promise<User> => {
   try {
-    // Configure popup settings to handle CORS issues
-    const popupOptions = {
-      // Add any additional popup configuration if needed
-    };
-    
     const result: UserCredential = await signInWithPopup(auth, googleProvider);
     const firebaseUser = result.user;
     

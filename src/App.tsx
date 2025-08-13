@@ -29,7 +29,7 @@ const LoadingFallback: React.FC = () => (
 
 const AppContent: React.FC = () => {
   return (
-    <AppLayout title="TodoList" showUserProfile={true}>
+    <AppLayout>
       <ProtectedRoute>
         <Box sx={{ position: 'relative' }}>
           <OfflineIndicator />

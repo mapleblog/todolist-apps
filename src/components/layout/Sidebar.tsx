@@ -10,7 +10,9 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
-  IconButton
+  IconButton,
+  Avatar,
+  Button
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -18,8 +20,11 @@ import {
   Assignment as TasksIcon,
   School as StudyIcon,
   Menu as MenuIcon,
-  ChevronLeft as ChevronLeftIcon
+  ChevronLeft as ChevronLeftIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SidebarProps {
   open: boolean;
@@ -69,10 +74,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [collapsed, setCollapsed] = useState(false);
+  const { user, signOut, isAuthenticated } = useAuth();
 
   const handleToggleCollapse = () => {
     if (!isMobile) {
       setCollapsed(!collapsed);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out failed:', error);
     }
   };
 
@@ -171,11 +185,133 @@ const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </List>
 
+      {/* User Section */}
+      {isAuthenticated && user && (
+        <Box
+          sx={{
+            borderTop: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          {(!collapsed || isMobile) && (
+            <Box sx={{ p: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  mb: 1.5
+                }}
+              >
+                <Avatar
+                  src={user.photoURL || undefined}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    bgcolor: 'primary.main'
+                  }}
+                >
+                  {!user.photoURL && (
+                    <PersonIcon sx={{ fontSize: 20 }} />
+                  )}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      lineHeight: 1.2,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {user.displayName || 'User'}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      fontSize: '0.75rem',
+                      lineHeight: 1.2,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      display: 'block'
+                    }}
+                  >
+                    {user.email}
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="small"
+                startIcon={<LogoutIcon />}
+                onClick={handleSignOut}
+                sx={{
+                  borderColor: 'divider',
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                  py: 0.75,
+                  '&:hover': {
+                     borderColor: 'primary.main',
+                     backgroundColor: 'primary.main',
+                     color: 'primary.contrastText'
+                   }
+                }}
+              >
+                Sign Out
+              </Button>
+            </Box>
+          )}
+          {(collapsed && !isMobile) && (
+            <Box
+              sx={{
+                p: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <Avatar
+                src={user.photoURL || undefined}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: 'primary.main'
+                }}
+              >
+                {!user.photoURL && (
+                  <PersonIcon sx={{ fontSize: 16 }} />
+                )}
+              </Avatar>
+              <IconButton
+                size="small"
+                onClick={handleSignOut}
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                     backgroundColor: 'primary.main',
+                     color: 'primary.contrastText'
+                   }
+                }}
+              >
+                <LogoutIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Box>
+          )}
+        </Box>
+      )}
+
       {/* Footer */}
       <Box
         sx={{
-          p: 2,
-          borderTop: '1px solid',
+          p: 1,
+          borderTop: isAuthenticated && user ? 'none' : '1px solid',
           borderColor: 'divider'
         }}
       >
@@ -186,7 +322,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             sx={{
               display: 'block',
               textAlign: 'center',
-              fontSize: '0.75rem'
+              fontSize: '0.7rem'
             }}
           >
             TodoList v1.0
