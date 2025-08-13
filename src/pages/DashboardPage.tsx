@@ -40,6 +40,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { useTodos } from '../hooks/useTodos';
+import { Todo } from '../types';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -47,13 +48,13 @@ const DashboardPage: React.FC = () => {
 
   // Calculate statistics
   const totalTasks = todos.length;
-  const completedTasks = todos.filter(todo => todo.completed).length;
+  const completedTasks = todos.filter((todo: Todo) => todo.completed).length;
   const pendingTasks = totalTasks - completedTasks;
   const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   // Get recent tasks (last 5)
   const recentTasks = todos
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a: Todo, b: Todo) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
   // Chart data preparation
@@ -66,17 +67,17 @@ const DashboardPage: React.FC = () => {
   const priorityData = [
     { 
       name: 'High', 
-      value: todos.filter(todo => todo.priority === 'high').length, 
+      value: todos.filter((todo: Todo) => todo.priority === 'high').length, 
       color: '#f44336' 
     },
     { 
       name: 'Medium', 
-      value: todos.filter(todo => todo.priority === 'medium').length, 
+      value: todos.filter((todo: Todo) => todo.priority === 'medium').length, 
       color: '#ff9800' 
     },
     { 
       name: 'Low', 
-      value: todos.filter(todo => todo.priority === 'low').length, 
+      value: todos.filter((todo: Todo) => todo.priority === 'low').length, 
       color: '#4caf50' 
     }
   ];
@@ -207,7 +208,7 @@ const DashboardPage: React.FC = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
-                    {todos.filter(todo => todo.priority === 'high').length}
+                    {todos.filter((todo: Todo) => todo.priority === 'high').length}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
                     High Priority
@@ -481,7 +482,7 @@ const DashboardPage: React.FC = () => {
             <CardContent>
               {recentTasks.length > 0 ? (
                 <List dense>
-                  {recentTasks.map((task) => (
+                  {recentTasks.map((task: Todo) => (
                     <ListItem key={task.id} sx={{ px: 0 }}>
                       <ListItemIcon>
                         <CheckCircleIcon

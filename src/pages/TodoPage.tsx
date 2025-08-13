@@ -68,7 +68,7 @@ const TodoPage: React.FC = () => {
   }, [user, fetchTodos]);
 
   // Filter todos based on search query and filters
-  const filteredTodos = todos.filter(todo => {
+  const filteredTodos = todos.filter((todo: Todo) => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -118,7 +118,7 @@ const TodoPage: React.FC = () => {
         bValue = b.title.toLowerCase();
         break;
       case 'priority':
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        const priorityOrder: { [key: string]: number } = { high: 3, medium: 2, low: 1 };
         aValue = priorityOrder[a.priority] || 0;
         bValue = priorityOrder[b.priority] || 0;
         break;

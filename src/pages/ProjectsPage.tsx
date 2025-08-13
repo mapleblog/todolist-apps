@@ -175,7 +175,7 @@ const ProjectsPage: React.FC = () => {
             </Box>
             <Box>
               <Typography variant="h4" color="success.main" fontWeight="bold">
-                {projects.filter(p => p.status === 'active').length}
+                {projects.filter((p: Project) => p.status === 'active').length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Active
@@ -183,7 +183,7 @@ const ProjectsPage: React.FC = () => {
             </Box>
             <Box>
               <Typography variant="h4" color="info.main" fontWeight="bold">
-                {projects.filter(p => p.status === 'completed').length}
+                {projects.filter((p: Project) => p.status === 'completed').length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Completed
@@ -191,7 +191,7 @@ const ProjectsPage: React.FC = () => {
             </Box>
             <Box>
               <Typography variant="h4" color="warning.main" fontWeight="bold">
-                {projects.filter(p => p.status === 'on-hold').length}
+                {projects.filter((p: Project) => p.status === 'on-hold').length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 On Hold
