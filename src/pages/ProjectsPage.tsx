@@ -11,10 +11,7 @@ import {
 
 import {
   ProjectList,
-  ProjectForm,
-  Project,
-  CreateProjectData,
-  UpdateProjectData
+  Project
 } from '../components/project';
 import { useProjects } from '../hooks/useProjects';
 import { useAuth } from '../contexts/AuthContext';
@@ -26,14 +23,10 @@ const ProjectsPage: React.FC = () => {
     loading,
     error,
     fetchProjects,
-    addProject,
-    updateProject,
     deleteProject
   } = useProjects();
 
   // Local state
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -47,42 +40,16 @@ const ProjectsPage: React.FC = () => {
     }
   }, [user, fetchProjects]);
 
-  const handleAddProject = () => {
-    setEditingProject(null);
-    setIsFormOpen(true);
-  };
 
-  const handleEditProject = (project: Project) => {
-    setEditingProject(project);
-    setIsFormOpen(true);
-  };
+
+
 
   const handleViewProject = (project: Project) => {
     // View functionality is handled within ProjectCard component
     console.log('Viewing project:', project.name);
   };
 
-  const handleFormSubmit = async (projectData: CreateProjectData | UpdateProjectData) => {
-    try {
-      if (editingProject) {
-        await updateProject(editingProject.id, projectData as UpdateProjectData);
-        showSnackbar('Project updated successfully!', 'success');
-      } else {
-        await addProject(projectData as CreateProjectData);
-        showSnackbar('Project created successfully!', 'success');
-      }
-      setIsFormOpen(false);
-      setEditingProject(null);
-    } catch (error) {
-      console.error('Failed to save project:', error);
-      showSnackbar('Failed to save project. Please try again.', 'error');
-    }
-  };
 
-  const handleFormCancel = () => {
-    setIsFormOpen(false);
-    setEditingProject(null);
-  };
 
   const handleDeleteProject = async (projectId: string) => {
     try {
@@ -94,15 +61,7 @@ const ProjectsPage: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (projectId: string, status: Project['status']) => {
-    try {
-      await updateProject(projectId, { status });
-      showSnackbar(`Project status updated to ${status}!`, 'success');
-    } catch (error) {
-      console.error('Failed to update project status:', error);
-      showSnackbar('Failed to update project status. Please try again.', 'error');
-    }
-  };
+
 
 
 
@@ -204,24 +163,14 @@ const ProjectsPage: React.FC = () => {
         <ProjectList
           projects={projects}
           loading={loading}
-          onEdit={handleEditProject}
           onDelete={handleDeleteProject}
           onView={handleViewProject}
-          onStatusChange={handleStatusChange}
-          onAddNew={handleAddProject}
         />
       </Stack>
 
 
 
-      {/* Project Form Dialog */}
-      <ProjectForm
-        open={isFormOpen}
-        onClose={handleFormCancel}
-        onSubmit={handleFormSubmit}
-        project={editingProject}
-        loading={loading}
-      />
+
 
       {/* Snackbar for notifications */}
       <Snackbar
