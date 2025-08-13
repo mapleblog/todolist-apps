@@ -13,24 +13,13 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
-  Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
+  ListItemIcon
 } from '@mui/material';
 import {
   Book as BookIcon,
   Quiz as QuizIcon,
   Timer as TimerIcon,
   TrendingUp as ProgressIcon,
-  Add as AddIcon,
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
   Stop as StopIcon,
@@ -110,16 +99,10 @@ const mockStudyGoals: StudyGoal[] = [
 ];
 
 const StudyPage: React.FC = () => {
-  const [studySessions, setStudySessions] = useState<StudySession[]>(mockStudySessions);
+  const [studySessions] = useState<StudySession[]>(mockStudySessions);
   const [studyGoals] = useState<StudyGoal[]>(mockStudyGoals);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [newSession, setNewSession] = useState({
-    subject: '',
-    topic: '',
-    type: 'reading' as StudySession['type']
-  });
 
   // Timer functionality
   React.useEffect(() => {
@@ -154,22 +137,7 @@ const StudyPage: React.FC = () => {
     }
   };
 
-  const handleCreateSession = () => {
-    if (newSession.subject && newSession.topic) {
-      const session: StudySession = {
-        id: Date.now().toString(),
-        subject: newSession.subject,
-        topic: newSession.topic,
-        duration: 0,
-        completed: false,
-        date: new Date().toISOString().split('T')[0],
-        type: newSession.type
-      };
-      setStudySessions([...studySessions, session]);
-      setNewSession({ subject: '', topic: '', type: 'reading' });
-      setDialogOpen(false);
-    }
-  };
+
 
   const getTypeIcon = (type: StudySession['type']) => {
     switch (type) {
@@ -387,64 +355,9 @@ const StudyPage: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Floating Action Button */}
-      <Fab
-        color="primary"
-        aria-label="add study session"
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24
-        }}
-        onClick={() => setDialogOpen(true)}
-      >
-        <AddIcon />
-      </Fab>
 
-      {/* Create Study Session Dialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Plan Study Session</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Subject"
-            fullWidth
-            variant="outlined"
-            value={newSession.subject}
-            onChange={(e) => setNewSession({ ...newSession, subject: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Topic"
-            fullWidth
-            variant="outlined"
-            value={newSession.topic}
-            onChange={(e) => setNewSession({ ...newSession, topic: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <FormControl fullWidth variant="outlined">
-            <InputLabel>Study Type</InputLabel>
-            <Select
-              value={newSession.type}
-              onChange={(e) => setNewSession({ ...newSession, type: e.target.value as StudySession['type'] })}
-              label="Study Type"
-            >
-              <MenuItem value="reading">Reading</MenuItem>
-              <MenuItem value="practice">Practice</MenuItem>
-              <MenuItem value="review">Review</MenuItem>
-              <MenuItem value="exam">Exam</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreateSession} variant="contained">
-            Plan Session
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+
     </Box>
   );
 };

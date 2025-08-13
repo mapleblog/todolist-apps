@@ -3,22 +3,12 @@ import {
   Container,
   Box,
   Typography,
-  Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Button,
   Alert,
   Snackbar,
   Stack,
-  Paper,
-  useMediaQuery,
-  useTheme
+  Paper
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Refresh as RefreshIcon
-} from '@mui/icons-material';
+
 import {
   ProjectList,
   ProjectForm,
@@ -30,8 +20,6 @@ import { useProjects } from '../hooks/useProjects';
 import { useAuth } from '../contexts/AuthContext';
 
 const ProjectsPage: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useAuth();
   const {
     projects,
@@ -40,8 +28,7 @@ const ProjectsPage: React.FC = () => {
     fetchProjects,
     addProject,
     updateProject,
-    deleteProject,
-    refreshProjects
+    deleteProject
   } = useProjects();
 
   // Local state
@@ -117,15 +104,7 @@ const ProjectsPage: React.FC = () => {
     }
   };
 
-  const handleRefresh = async () => {
-    try {
-      await refreshProjects();
-      showSnackbar('Projects refreshed!', 'success');
-    } catch (error) {
-      console.error('Failed to refresh projects:', error);
-      showSnackbar('Failed to refresh projects.', 'error');
-    }
-  };
+
 
   const showSnackbar = (message: string, severity: 'success' | 'error' | 'info' | 'warning') => {
     setSnackbar({ open: true, message, severity });
@@ -154,16 +133,7 @@ const ProjectsPage: React.FC = () => {
             My Projects
           </Typography>
           
-          {!isMobile && (
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-              disabled={loading}
-            >
-              Refresh
-            </Button>
-          )}
+
         </Box>
 
         {/* Error Display */}
@@ -174,11 +144,27 @@ const ProjectsPage: React.FC = () => {
         )}
 
         {/* Project Statistics */}
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ 
+          p: 3, 
+          borderRadius: 2,
+          background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.02) 0%, rgba(25, 118, 210, 0.01) 100%)',
+          border: '1px solid rgba(25, 118, 210, 0.08)'
+        }}>
           <Typography variant="h6" gutterBottom>
             Project Overview
           </Typography>
-          <Stack direction="row" spacing={4} flexWrap="wrap" useFlexGap>
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={4} 
+            flexWrap="wrap" 
+            useFlexGap
+            sx={{
+              '& > *': {
+                minWidth: { xs: '100%', sm: 'auto' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }
+            }}
+          >
             <Box>
               <Typography variant="h4" color="primary" fontWeight="bold">
                 {projects.length}
@@ -226,20 +212,7 @@ const ProjectsPage: React.FC = () => {
         />
       </Stack>
 
-      {/* Floating Action Button */}
-      <Fab
-        color="primary"
-        aria-label="add project"
-        onClick={handleAddProject}
-        sx={{
-          position: 'fixed',
-          bottom: isMobile ? 16 : 32,
-          right: isMobile ? 16 : 32,
-          zIndex: 1000
-        }}
-      >
-        <AddIcon />
-      </Fab>
+
 
       {/* Project Form Dialog */}
       <ProjectForm

@@ -3,25 +3,19 @@ import {
   Container,
   Box,
   Typography,
-  Fab,
   Dialog,
   DialogTitle,
   DialogContent,
-
   Button,
   Alert,
   Snackbar,
   Stack,
   Paper,
-
   Skeleton,
   useMediaQuery,
   useTheme
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Refresh as RefreshIcon
-} from '@mui/icons-material';
+
 import {
   TodoList,
   TodoForm,
@@ -149,10 +143,7 @@ const TodoPage: React.FC = () => {
     return 0;
   });
 
-  const handleAddTodo = () => {
-    setEditingTodo(null);
-    setIsFormOpen(true);
-  };
+
 
   const handleEditTodo = (todo: Todo) => {
     setEditingTodo(todo);
@@ -181,15 +172,7 @@ const TodoPage: React.FC = () => {
     setEditingTodo(null);
   };
 
-  const handleRefresh = async () => {
-    try {
-      await fetchTodos();
-      showSnackbar('Todos refreshed!', 'success');
-    } catch (error) {
-      console.error('Failed to refresh todos:', error);
-      showSnackbar('Failed to refresh todos.', 'error');
-    }
-  };
+
 
   const showSnackbar = (message: string, severity: 'success' | 'error' | 'info' | 'warning') => {
     setSnackbar({ open: true, message, severity });
@@ -218,16 +201,7 @@ const TodoPage: React.FC = () => {
             My Todos
           </Typography>
           
-          {!isMobile && (
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-              disabled={loading}
-            >
-              Refresh
-            </Button>
-          )}
+
         </Box>
 
         {/* Error Display */}
@@ -273,14 +247,9 @@ const TodoPage: React.FC = () => {
                 <Typography variant="body2" color="text.secondary">
                   Create your first todo to get started!
                 </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddTodo}
-                  size="large"
-                >
-                  Add Your First Todo
-                </Button>
+                <Typography variant="body2" color="text.secondary">
+                  Use the form below to create your first todo!
+                </Typography>
               </Stack>
             ) : (
               <Stack spacing={2} alignItems="center">
@@ -321,20 +290,7 @@ const TodoPage: React.FC = () => {
         )}
       </Stack>
 
-      {/* Floating Action Button */}
-      <Fab
-        color="primary"
-        aria-label="add todo"
-        onClick={handleAddTodo}
-        sx={{
-          position: 'fixed',
-          bottom: isMobile ? 16 : 32,
-          right: isMobile ? 16 : 32,
-          zIndex: 1000
-        }}
-      >
-        <AddIcon />
-      </Fab>
+
 
       {/* Todo Form Dialog */}
       <Dialog
