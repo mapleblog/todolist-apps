@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import {
   getTodos,
   createTodo,
@@ -277,7 +277,7 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
   };
 
   // Fetch todos with offline support
-  const fetchTodos = async (): Promise<void> => {
+  const fetchTodos = useCallback(async (): Promise<void> => {
     if (!user) return;
     
     try {
@@ -313,7 +313,7 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch todos';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
-  };
+  }, [user, isOnline, offlineStorageService]);
 
   // Add todo with offline support
   const addTodo = async (todoData: CreateTodoData): Promise<void> => {
@@ -521,7 +521,7 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
     } else {
       dispatch({ type: 'CLEAR_TODOS' });
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, fetchTodos]);
 
   // Computed properties
   const filteredTodos = applyFiltersAndSort(state.todos, state.filters, state.sortOptions);
