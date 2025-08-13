@@ -42,7 +42,9 @@ const TodoPage: React.FC = () => {
     todos,
     loading,
     error,
-    fetchTodos
+    fetchTodos,
+    addTodo,
+    updateTodoItem
   } = useTodos();
 
   // Local state
@@ -157,22 +159,22 @@ const TodoPage: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  // const handleFormSubmit = async (todoData: any) => {
-  //   try {
-  //     if (editingTodo) {
-  //       await updateTodoItem(editingTodo.id, todoData);
-  //       showSnackbar('Todo updated successfully!', 'success');
-  //     } else {
-  //       await addTodo(todoData);
-  //       showSnackbar('Todo added successfully!', 'success');
-  //     }
-  //     setIsFormOpen(false);
-  //     setEditingTodo(null);
-  //   } catch (error) {
-  //     console.error('Failed to save todo:', error);
-  //     showSnackbar('Failed to save todo. Please try again.', 'error');
-  //   }
-  // };
+  const handleFormSubmit = async (todoData: any) => {
+    try {
+      if (editingTodo) {
+        await updateTodoItem(editingTodo.id, todoData);
+        showSnackbar('Todo updated successfully!', 'success');
+      } else {
+        await addTodo(todoData);
+        showSnackbar('Todo added successfully!', 'success');
+      }
+      setIsFormOpen(false);
+      setEditingTodo(null);
+    } catch (error) {
+      console.error('Failed to save todo:', error);
+      showSnackbar('Failed to save todo. Please try again.', 'error');
+    }
+  };
 
   const handleFormCancel = () => {
     setIsFormOpen(false);
@@ -355,10 +357,11 @@ const TodoPage: React.FC = () => {
         </DialogTitle>
         <DialogContent dividers>
           <TodoForm
-          open={isFormOpen}
-          onClose={handleFormCancel}
-          todo={editingTodo}
-        />
+            open={isFormOpen}
+            onClose={handleFormCancel}
+            onSubmit={handleFormSubmit}
+            todo={editingTodo}
+          />
         </DialogContent>
       </Dialog>
 

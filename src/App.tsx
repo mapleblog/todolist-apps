@@ -4,7 +4,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { TodoProvider } from './contexts/TodoContext';
 import { ProtectedRoute, AppLayout } from './components';
 import OfflineIndicator from './components/common/OfflineIndicator';
-import PerformanceDashboard from './components/PerformanceDashboard';
 
 // Lazy load components for better performance
 const TodoPage = React.lazy(() => import('./pages/TodoPage'));
@@ -37,10 +36,6 @@ const AppContent: React.FC = () => {
           <Suspense fallback={<LoadingFallback />}>
             <TodoPage />
           </Suspense>
-          {/* Performance Dashboard - only visible in development */}
-          {process.env.NODE_ENV === 'development' && (
-            <PerformanceDashboard isVisible={false} />
-          )}
         </Box>
       </ProtectedRoute>
     </AppLayout>

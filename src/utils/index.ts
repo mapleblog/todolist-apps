@@ -2,8 +2,6 @@
  * Utility functions and helpers
  */
 
-export * from './performance';
-
 // Date formatting utilities
 export const formatDate = (date: Date | string): string => {
   const d = new Date(date);

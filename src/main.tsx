@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import App from './App.tsx';
-import { initializePerformanceTracking } from './utils/performance';
 
 // Create Material-UI theme
 const theme = createTheme({
@@ -55,8 +54,7 @@ const theme = createTheme({
   },
 });
 
-// Initialize performance tracking
-initializePerformanceTracking().catch(console.error);
+
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

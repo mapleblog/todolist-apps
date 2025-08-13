@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   AppBar,
   Toolbar,
   Typography,
-  Container,
-  Paper,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  IconButton
 } from '@mui/material';
+import { Menu as MenuIcon } from '@mui/icons-material';
 import { UserProfile } from '../auth';
 import { useAuth } from '../../contexts/AuthContext';
-
+import Sidebar from './Sidebar';
+import { DashboardPage, ProjectsPage, StudyPage, TodoPage } from '../../pages';
 interface AppLayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -25,12 +26,52 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const { user } = useAuth();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState('dashboard');
 
   const isAuthenticated = !!user;
 
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleMenuItemSelect = (item: string) => {
+    setSelectedMenuItem(item);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const renderPageContent = () => {
+    switch (selectedMenuItem) {
+      case 'dashboard':
+        return <DashboardPage />;
+      case 'projects':
+        return <ProjectsPage />;
+      case 'tasks':
+        return <TodoPage />;
+      case 'study':
+        return <StudyPage />;
+      default:
+        return <DashboardPage />;
+    }
+  };
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Sidebar */}
+      {isAuthenticated && (
+        <Sidebar
+          open={sidebarOpen}
+          onToggle={handleSidebarToggle}
+          selectedItem={selectedMenuItem}
+          onItemSelect={handleMenuItemSelect}
+        />
+      )}
+
+      {/* Main Layout */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
       {/* App Bar */}
       <AppBar
         position="sticky"
@@ -48,8 +89,22 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             px: { xs: 2, sm: 3 }
           }}
         >
-          {/* Logo and Title */}
+          {/* Menu Button and Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {isAuthenticated && (
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleSidebarToggle}
+                sx={{
+                  display: { md: 'none' },
+                  color: 'text.primary'
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
             <Typography
               variant={isMobile ? 'h6' : 'h5'}
               component="h1"
@@ -99,54 +154,37 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         }}
       >
         {isAuthenticated ? (
-          <Container
-            maxWidth="lg"
-            sx={{
-              py: { xs: 2, sm: 3 },
-              px: { xs: 2, sm: 3 }
-            }}
-          >
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 2, sm: 3 },
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                backgroundColor: 'background.paper',
-                minHeight: 'calc(100vh - 120px)'
-              }}
-            >
-              {children}
-            </Paper>
-          </Container>
+          <Box sx={{ flex: 1, overflow: 'auto' }}>
+            {renderPageContent()}
+          </Box>
         ) : (
           children
         )}
       </Box>
 
-      {/* Footer */}
-      {isAuthenticated && (
-        <Box
-          component="footer"
-          sx={{
-            py: 2,
-            px: 3,
-            backgroundColor: 'background.paper',
-            borderTop: '1px solid',
-            borderColor: 'divider',
-            textAlign: 'center'
-          }}
-        >
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ fontSize: '0.75rem' }}
+        {/* Footer */}
+        {isAuthenticated && (
+          <Box
+            component="footer"
+            sx={{
+              py: 2,
+              px: 3,
+              backgroundColor: 'background.paper',
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              textAlign: 'center'
+            }}
           >
-            © 2024 TodoList. Built with React, TypeScript & Firebase.
-          </Typography>
-        </Box>
-      )}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: '0.75rem' }}
+            >
+              © 2024 TodoList. Built with React, TypeScript & Firebase.
+            </Typography>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };

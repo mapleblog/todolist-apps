@@ -34,6 +34,7 @@ import { Todo, TodoPriority, CreateTodoData, UpdateTodoData } from '../../types'
 interface TodoFormProps {
   open: boolean;
   onClose: () => void;
+  onSubmit?: (todoData: CreateTodoData | UpdateTodoData) => Promise<void>;
   todo?: Todo | null;
   defaultCategory?: string;
 }
@@ -41,6 +42,7 @@ interface TodoFormProps {
 const TodoForm: React.FC<TodoFormProps> = ({
   open,
   onClose,
+  onSubmit,
   todo,
   defaultCategory
 }) => {
@@ -143,12 +145,18 @@ const TodoForm: React.FC<TodoFormProps> = ({
         dueDate: formData.dueDate || undefined
       };
 
-      if (todo) {
-        // Update existing todo
-        await updateTodoItem(todo.id, todoData as UpdateTodoData);
+      if (onSubmit) {
+        // Use external submit handler
+        await onSubmit(todoData);
       } else {
-        // Create new todo
-        await addTodo(todoData as CreateTodoData);
+        // Use internal TodoContext functions
+        if (todo) {
+          // Update existing todo
+          await updateTodoItem(todo.id, todoData as UpdateTodoData);
+        } else {
+          // Create new todo
+          await addTodo(todoData as CreateTodoData);
+        }
       }
 
       onClose();
