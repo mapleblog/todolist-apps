@@ -2,6 +2,7 @@ import { CreateTodoData, UpdateTodoData } from '../types';
 import { OfflineStorageService, PendingOperation } from './offlineStorage';
 import { NetworkStatusService } from './networkStatus';
 import todoService from './todoService';
+import { auth } from '../config/firebase';
 
 export interface QueuedOperation {
   id: string;
@@ -61,14 +62,21 @@ export class OperationQueueService {
     const localTodoId = `local_${operationId}`;
     
     try {
+      // Get current user for the operation
+      const user = await this.getCurrentUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
       // Create local todo immediately
       const localTodo = {
         id: localTodoId,
         ...data,
-        userId: 'current-user-id', // This should come from auth context
+        userId: user.uid,
         completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        priority: data.priority || 'medium',
+        createdAt: new Date(),
+        updatedAt: new Date(),
         syncStatus: 'pending' as const,
         lastModified: Date.now(),
         localId: localTodoId
@@ -109,7 +117,7 @@ export class OperationQueueService {
         const updatedTodo = {
           ...localTodo,
           ...data,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(),
           syncStatus: 'pending' as const,
           lastModified: Date.now()
         };
@@ -180,7 +188,7 @@ export class OperationQueueService {
         const updatedTodo = {
           ...localTodo,
           completed,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(),
           syncStatus: 'pending' as const,
           lastModified: Date.now()
         };
@@ -301,7 +309,11 @@ export class OperationQueueService {
     }
 
     const createData = operation.data as CreateTodoData;
-    const newTodo = await todoService.createTodo(createData);
+    const user = await this.getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    const newTodo = await todoService.createTodo(user.uid, createData);
     
     // Update local storage with server ID
     await this.offlineStorage.deleteTodo(operation.todoId);
@@ -323,7 +335,11 @@ export class OperationQueueService {
     }
 
     const updateData = operation.data as UpdateTodoData;
-    await todoService.updateTodo(operation.todoId, updateData);
+    const user = await this.getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    await todoService.updateTodo(operation.todoId, user.uid, updateData);
     
     // Update sync status
     await this.offlineStorage.updateTodoSyncStatus(operation.todoId, 'synced');
@@ -339,7 +355,12 @@ export class OperationQueueService {
       throw new Error('Invalid delete operation data');
     }
 
-    await todoService.deleteTodo(operation.todoId);
+    // Get current user for the operation
+            const user = await this.getCurrentUser();
+            if (!user) {
+              throw new Error('User not authenticated');
+            }
+            await todoService.deleteTodo(operation.todoId, user.uid);
     
     return {
       success: true,
@@ -353,7 +374,11 @@ export class OperationQueueService {
     }
 
     const toggleData = operation.data as { completed: boolean };
-    await todoService.updateTodo(operation.todoId, { completed: toggleData.completed });
+    const user = await this.getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    await todoService.updateTodo(operation.todoId, user.uid, { completed: toggleData.completed });
     
     // Update sync status
     await this.offlineStorage.updateTodoSyncStatus(operation.todoId, 'synced');
@@ -395,6 +420,15 @@ export class OperationQueueService {
 
   public isQueueProcessing(): boolean {
     return this.isProcessing;
+  }
+
+  private async getCurrentUser(): Promise<{ uid: string } | null> {
+    return new Promise((resolve) => {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        unsubscribe();
+        resolve(user ? { uid: user.uid } : null);
+      });
+    });
   }
 
   public destroy(): void {

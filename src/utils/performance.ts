@@ -8,8 +8,23 @@ export interface PerformanceMetrics {
   loadTime: number;
   renderTime: number;
   bundleSize?: number;
-  memoryUsage?: number;
+  memoryUsage?: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  };
   timestamp: number;
+  domContentLoaded?: number;
+  firstPaint?: number;
+  firstContentfulPaint?: number;
+  performanceScore?: number;
+  webVitals?: {
+    CLS?: number;
+    FID?: number;
+    LCP?: number;
+    FCP?: number;
+    TTFB?: number;
+  };
 }
 
 // Performance observer for tracking metrics
@@ -67,6 +82,16 @@ export class PerformanceMonitor {
     }
   }
 
+  public recordWebVital(name: string, value: number): void {
+    const metric: PerformanceMetrics = {
+      loadTime: 0,
+      renderTime: 0,
+      timestamp: Date.now(),
+      [name]: value
+    };
+    this.metrics.push(metric);
+  }
+
   public getMetrics(): PerformanceMetrics[] {
     return [...this.metrics];
   }
@@ -89,18 +114,42 @@ export class PerformanceMonitor {
   }
 }
 
-// Web Vitals tracking
-export const trackWebVitals = (onPerfEntry?: (metric: any) => void): void => {
-  if (onPerfEntry && typeof onPerfEntry === 'function') {
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(onPerfEntry);
-      getFID(onPerfEntry);
-      getFCP(onPerfEntry);
-      getLCP(onPerfEntry);
-      getTTFB(onPerfEntry);
-    }).catch((error) => {
-      console.warn('Web Vitals not available:', error);
-    });
+// Web Vitals integration
+export const trackWebVitals = async (): Promise<void> => {
+  try {
+    const webVitals = await import('web-vitals');
+    
+    if (webVitals.getCLS) {
+       webVitals.getCLS((metric) => {
+         performanceMonitor.recordWebVital('CLS', metric.value);
+       });
+     }
+     
+     if (webVitals.getFID) {
+       webVitals.getFID((metric) => {
+         performanceMonitor.recordWebVital('FID', metric.value);
+       });
+     }
+     
+     if (webVitals.getFCP) {
+       webVitals.getFCP((metric) => {
+         performanceMonitor.recordWebVital('FCP', metric.value);
+       });
+     }
+     
+     if (webVitals.getLCP) {
+       webVitals.getLCP((metric) => {
+         performanceMonitor.recordWebVital('LCP', metric.value);
+       });
+     }
+     
+     if (webVitals.getTTFB) {
+       webVitals.getTTFB((metric) => {
+         performanceMonitor.recordWebVital('TTFB', metric.value);
+       });
+     }
+  } catch (error) {
+    console.warn('Web Vitals not available:', error);
   }
 };
 
@@ -152,11 +201,9 @@ export const measurePerformance = (name: string, fn: () => void | Promise<void>)
 export const performanceMonitor = PerformanceMonitor.getInstance();
 
 // Initialize performance tracking
-export const initializePerformanceTracking = (): void => {
+export const initializePerformanceTracking = async (): Promise<void> => {
   // Track web vitals
-  trackWebVitals((metric) => {
-    console.log('Web Vital:', metric);
-  });
+  await trackWebVitals();
 
   // Log initial memory usage
   trackMemoryUsage();

@@ -44,7 +44,7 @@ const TodoForm: React.FC<TodoFormProps> = ({
   todo,
   defaultCategory
 }) => {
-  const { addTodo, updateTodo, loading } = useTodos();
+  const { addTodo, updateTodoItem } = useTodos();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -145,7 +145,7 @@ const TodoForm: React.FC<TodoFormProps> = ({
 
       if (todo) {
         // Update existing todo
-        await updateTodo(todo.id, todoData as UpdateTodoData);
+        await updateTodoItem(todo.id, todoData as UpdateTodoData);
       } else {
         // Create new todo
         await addTodo(todoData as CreateTodoData);
@@ -338,7 +338,7 @@ const TodoForm: React.FC<TodoFormProps> = ({
             <DateTimePicker
               label="Due Date"
               value={formData.dueDate}
-              onChange={(date) => handleInputChange('dueDate', date)}
+              onChange={(date: Date | null) => handleInputChange('dueDate', date)}
               slotProps={{
                 textField: {
                   fullWidth: true,

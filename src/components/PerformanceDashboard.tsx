@@ -38,7 +38,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
     setLoading(true);
     try {
       const currentMetrics = performanceMonitor.getMetrics();
-      setMetrics(currentMetrics);
+      setMetrics(currentMetrics.length > 0 ? currentMetrics[currentMetrics.length - 1] : null);
     } catch (error) {
       console.error('Failed to get performance metrics:', error);
     } finally {
@@ -189,7 +189,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                 
                 <Grid item xs={6}>
                   <Typography variant="body2" color="text.secondary">
-                    DOM Ready: {formatTime(metrics.domContentLoaded)}
+                    DOM Ready: {formatTime(metrics.domContentLoaded || 0)}
                   </Typography>
                 </Grid>
 
@@ -226,13 +226,13 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                 
                 <Grid item xs={6}>
                   <Typography variant="body2" color="text.secondary">
-                    First Paint: {formatTime(metrics.firstPaint)}
+                    First Paint: {formatTime(metrics.firstPaint || 0)}
                   </Typography>
                 </Grid>
                 
                 <Grid item xs={6}>
                   <Typography variant="body2" color="text.secondary">
-                    FCP: {formatTime(metrics.firstContentfulPaint)}
+                    FCP: {formatTime(metrics.firstContentfulPaint || 0)}
                   </Typography>
                 </Grid>
 
@@ -240,18 +240,18 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
                 <Grid item xs={12}>
                   <Box sx={{ mt: 1 }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Overall Score: {metrics.performanceScore}/100
+                      Overall Score: {metrics.performanceScore || 0}/100
                     </Typography>
                     <LinearProgress
                       variant="determinate"
-                      value={metrics.performanceScore}
-                      color={getScoreColor(metrics.performanceScore)}
+                      value={metrics.performanceScore || 0}
+                      color={getScoreColor(metrics.performanceScore || 0)}
                     />
                   </Box>
                 </Grid>
 
                 {/* Warnings */}
-                {metrics.performanceScore < 70 && (
+                {(metrics.performanceScore || 0) < 70 && (
                   <Grid item xs={12}>
                     <Alert severity="warning" sx={{ mt: 1 }}>
                       Performance issues detected. Consider optimizing your application.

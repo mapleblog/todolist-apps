@@ -30,10 +30,10 @@ import {
   Refresh
 } from '@mui/icons-material';
 import { useNetworkStatus } from '../../services/networkStatus';
-import SyncService from '../../services/syncService';
-import OperationQueueService from '../../services/operationQueue';
-import ConflictResolverService from '../../services/conflictResolver';
-import { NetworkStatus, QueueStatus, ConflictData } from '../../types';
+import { SyncService } from '../../services/syncService';
+import { OperationQueueService } from '../../services/operationQueue';
+import { ConflictResolverService } from '../../services/conflictResolver';
+import { QueueStatus, ConflictData } from '../../types';
 
 interface OfflineIndicatorProps {
   showDetails?: boolean;

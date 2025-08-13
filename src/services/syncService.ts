@@ -135,7 +135,7 @@ export class SyncService {
       }
 
       // Step 2: Fetch remote todos
-      const remoteTodos = await todoService.getTodos();
+      const remoteTodos = await todoService.getTodos(currentUser.uid);
       
       // Step 3: Get local todos
       const localTodos = await this.offlineStorage.getAllTodos(currentUser.uid);
@@ -213,6 +213,11 @@ export class SyncService {
     options: SyncOptions,
     result: SyncResult
   ): Promise<void> {
+    const currentUser = await this.getCurrentUser();
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+
     const pendingTodos = localTodos.filter(todo => 
       todo.syncStatus === 'pending' || 
       (todo.syncStatus === 'conflict' && options.resolveConflicts === 'local')
@@ -230,7 +235,7 @@ export class SyncService {
             dueDate: localTodo.dueDate
           };
           
-          const newTodo = await todoService.createTodo(createData);
+          const newTodo = await todoService.createTodo(currentUser.uid, createData);
           
           // Update local todo with server ID
           await this.offlineStorage.deleteTodo(localTodo.id);
@@ -250,7 +255,7 @@ export class SyncService {
             dueDate: localTodo.dueDate
           };
           
-          await todoService.updateTodo(localTodo.id, updateData);
+          await todoService.updateTodo(localTodo.id, currentUser.uid, updateData);
           await this.offlineStorage.updateTodoSyncStatus(localTodo.id, 'synced');
         }
         
@@ -270,7 +275,11 @@ export class SyncService {
       try {
         switch (operation.type) {
           case 'delete':
-            await todoService.deleteTodo(operation.todoId);
+            const currentUser = await this.getCurrentUser();
+            if (!currentUser) {
+              throw new Error('User not authenticated');
+            }
+            await todoService.deleteTodo(operation.todoId, currentUser.uid);
             await this.offlineStorage.removePendingOperation(operation.id!);
             result.syncedCount++;
             break;
@@ -349,7 +358,9 @@ export class SyncService {
         return await this.syncTodo(todoId);
       } else {
         // Fetch remote version and overwrite local
-        const remoteTodo = await todoService.getTodoById(todoId);
+        const user = await this.getCurrentUser();
+        if (!user) return false;
+        const remoteTodo = await todoService.getTodoById(todoId, user.uid);
         if (remoteTodo) {
           await this.offlineStorage.saveTodo({
             ...remoteTodo,

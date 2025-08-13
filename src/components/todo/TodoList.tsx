@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   List,
@@ -339,7 +339,7 @@ const TodoList: React.FC<TodoListProps> = ({
                                   </Typography>
                                 )}
                                 
-                                {todo.priority && todo.priority !== 'none' && (
+                                {todo.priority && todo.priority !== 'low' && (
                                   <Chip
                                     icon={<FlagIcon />}
                                     label={getPriorityLabel(todo.priority)}

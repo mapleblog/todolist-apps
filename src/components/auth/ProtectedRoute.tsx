@@ -14,10 +14,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   fallback,
   requireAuth = true
 }) => {
-  const { user, authState } = useAuth();
+  const { user, loading } = useAuth();
 
   // Show loading state while checking authentication
-  if (authState === 'loading') {
+  if (loading) {
     return (
       fallback || (
         <Box
@@ -40,7 +40,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If authentication is required but user is not authenticated
-  if (requireAuth && (!user || authState !== 'authenticated')) {
+  if (requireAuth && !user) {
     return <LoginPage />;
   }
 

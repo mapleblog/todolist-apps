@@ -10,9 +10,9 @@ export interface OfflineTodo extends Todo {
 
 export interface PendingOperation {
   id?: number;
-  type: 'create' | 'update' | 'delete';
+  type: 'create' | 'update' | 'delete' | 'toggle';
   todoId: string;
-  data?: CreateTodoData | UpdateTodoData;
+  data?: CreateTodoData | UpdateTodoData | { completed: boolean };
   timestamp: number;
   retryCount: number;
 }

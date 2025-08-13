@@ -24,11 +24,9 @@ import {
   Flag as FlagIcon,
   Folder as FolderIcon,
   CheckCircle as CheckCircleIcon,
-  Schedule as ScheduleIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon
+
 } from '@mui/icons-material';
-import { TodoFilter, TodoSort, TodoPriority } from '../../types';
+import { TodoFilter, TodoSort } from '../../types';
 import { useTodos } from '../../contexts/TodoContext';
 
 interface TodoFiltersProps {
@@ -107,17 +105,7 @@ const TodoFilters: React.FC<TodoFiltersProps> = ({
     }
   };
 
-  const getSortLabel = (field: string, direction: string) => {
-    const fieldLabels = {
-      createdAt: 'Created',
-      updatedAt: 'Updated',
-      dueDate: 'Due Date',
-      priority: 'Priority',
-      title: 'Title'
-    };
-    const directionLabel = direction === 'asc' ? '↑' : '↓';
-    return `${fieldLabels[field as keyof typeof fieldLabels]} ${directionLabel}`;
-  };
+
 
   return (
     <Paper sx={{ p: 2, mb: 2 }}>

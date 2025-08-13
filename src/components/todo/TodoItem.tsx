@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Card,
   CardContent,
-  CardActions,
+
   Typography,
   Checkbox,
   IconButton,
@@ -16,7 +16,7 @@ import {
   ListItemText,
   Collapse,
   Divider,
-  Avatar
+
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -258,7 +258,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, onEdit, compact = false }) =>
                 {todo.dueDate && (
                   <Chip
                     icon={<ScheduleIcon />}
-                    label={formatDueDate(todo.dueDate)}
+                    label={todo.dueDate ? formatDueDate(todo.dueDate.toString()) : ''}
                     size="small"
                     variant="outlined"
                     sx={{

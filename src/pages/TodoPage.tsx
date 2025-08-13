@@ -7,13 +7,13 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
+
   Button,
   Alert,
   Snackbar,
   Stack,
   Paper,
-  Divider,
+
   Skeleton,
   useMediaQuery,
   useTheme
@@ -39,16 +39,10 @@ const TodoPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useAuth();
   const { 
-    todos, 
-    loading, 
-    error, 
-    fetchTodos, 
-    addTodo, 
-    updateTodoItem,
-    filters,
-    sortOptions,
-    setFilters,
-    setSortOptions
+    todos,
+    loading,
+    error,
+    fetchTodos
   } = useTodos();
 
   // Local state
@@ -163,22 +157,22 @@ const TodoPage: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = async (todoData: any) => {
-    try {
-      if (editingTodo) {
-        await updateTodoItem(editingTodo.id, todoData);
-        showSnackbar('Todo updated successfully!', 'success');
-      } else {
-        await addTodo(todoData);
-        showSnackbar('Todo added successfully!', 'success');
-      }
-      setIsFormOpen(false);
-      setEditingTodo(null);
-    } catch (error) {
-      console.error('Failed to save todo:', error);
-      showSnackbar('Failed to save todo. Please try again.', 'error');
-    }
-  };
+  // const handleFormSubmit = async (todoData: any) => {
+  //   try {
+  //     if (editingTodo) {
+  //       await updateTodoItem(editingTodo.id, todoData);
+  //       showSnackbar('Todo updated successfully!', 'success');
+  //     } else {
+  //       await addTodo(todoData);
+  //       showSnackbar('Todo added successfully!', 'success');
+  //     }
+  //     setIsFormOpen(false);
+  //     setEditingTodo(null);
+  //   } catch (error) {
+  //     console.error('Failed to save todo:', error);
+  //     showSnackbar('Failed to save todo. Please try again.', 'error');
+  //   }
+  // };
 
   const handleFormCancel = () => {
     setIsFormOpen(false);
@@ -308,9 +302,9 @@ const TodoPage: React.FC = () => {
           </Paper>
         ) : (
           <TodoList
-            todos={sortedTodos}
-            onEdit={handleEditTodo}
-            compact={isMobile}
+            onEditTodo={handleEditTodo}
+            filter={filter}
+            searchQuery={searchQuery}
           />
         )}
 
@@ -361,10 +355,10 @@ const TodoPage: React.FC = () => {
         </DialogTitle>
         <DialogContent dividers>
           <TodoForm
-            initialData={editingTodo}
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
-          />
+          open={isFormOpen}
+          onClose={handleFormCancel}
+          todo={editingTodo}
+        />
         </DialogContent>
       </Dialog>
 

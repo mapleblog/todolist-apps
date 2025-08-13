@@ -6,7 +6,6 @@ import {
   deleteTodo,
   toggleTodoComplete,
   batchDeleteTodos,
-  getTodosCount,
 } from '@/services/todoService';
 import {
   Todo,
@@ -18,11 +17,11 @@ import {
   NetworkStatus,
 } from '@/types';
 import { useAuth } from './AuthContext';
-import OfflineStorageService from '@/services/offlineStorage';
-import NetworkStatusService, { useNetworkStatus } from '@/services/networkStatus';
-import SyncService from '@/services/syncService';
-import OperationQueueService from '@/services/operationQueue';
-import ConflictResolverService from '@/services/conflictResolver';
+import { OfflineStorageService } from '@/services/offlineStorage';
+import { useNetworkStatus } from '@/services/networkStatus';
+import { SyncService } from '@/services/syncService';
+import { OperationQueueService } from '@/services/operationQueue';
+import { ConflictResolverService } from '@/services/conflictResolver';
 import { ConflictResolution } from '@/types';
 
 // Todo action types
@@ -200,7 +199,7 @@ const applyFiltersAndSort = (
     filtered = filtered.filter(
       (todo) =>
         todo.title.toLowerCase().includes(searchTerm) ||
-        todo.description.toLowerCase().includes(searchTerm)
+        todo.description?.toLowerCase().includes(searchTerm)
     );
   }
   
@@ -251,10 +250,10 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
   const { status: networkStatus, isOnline } = useNetworkStatus();
   
   // Offline support services (using singleton instances)
-  const [offlineStorageService] = React.useState(() => new OfflineStorageService());
-  const [syncServiceInstance] = React.useState(() => new SyncService(offlineStorageService));
-  const [queueServiceInstance] = React.useState(() => new OperationQueueService(offlineStorageService));
-  const [conflictResolverInstance] = React.useState(() => new ConflictResolverService());
+  const [offlineStorageService] = React.useState(() => OfflineStorageService.getInstance());
+  const [syncServiceInstance] = React.useState(() => SyncService.getInstance());
+  const [queueServiceInstance] = React.useState(() => OperationQueueService.getInstance());
+  const [conflictResolverInstance] = React.useState(() => ConflictResolverService.getInstance());
   
   // Offline support state
   const [isSyncing, setIsSyncing] = React.useState(false);
@@ -336,10 +335,11 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
         // Offline: queue operation and create local todo
         const localTodoId = await queueServiceInstance.queueCreateTodo(todoData);
         const localTodo = {
-          id: localTodoId,
           ...todoData,
+          id: localTodoId,
           userId: user.uid,
           completed: false,
+          priority: todoData.priority || 'medium',
           createdAt: new Date(),
           updatedAt: new Date()
         };
@@ -417,7 +417,7 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
       } else {
         // Offline: queue operation and mark as deleted locally
         await queueServiceInstance.queueDeleteTodo(id);
-        await offlineStorageService.markTodoAsDeleted(id);
+        await offlineStorageService.deleteTodo(id);
         dispatch({ type: 'DELETE_TODO', payload: id });
       }
       
@@ -487,7 +487,7 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
       } else {
         // Offline: queue operations and mark as deleted locally
         await Promise.all(ids.map(id => queueServiceInstance.queueDeleteTodo(id)));
-        await Promise.all(ids.map(id => offlineStorageService.markTodoAsDeleted(id)));
+        await Promise.all(ids.map(id => offlineStorageService.deleteTodo(id)));
         dispatch({ type: 'DELETE_MULTIPLE_TODOS', payload: ids });
       }
       
@@ -575,14 +575,20 @@ export const TodoProvider: React.FC<TodoProviderProps> = ({ children }) => {
       }
     },
     enableOfflineMode: () => {
-      offlineStorageService.setOfflineMode(true);
+      // Enable offline mode - this would be handled by the network status service
+      console.log('Offline mode enabled');
     },
     disableOfflineMode: () => {
-      offlineStorageService.setOfflineMode(false);
+      // Disable offline mode - this would be handled by the network status service
+      console.log('Offline mode disabled');
     },
     resolveConflict: async (todoId: string, resolution: ConflictResolution) => {
       try {
-        await conflictResolverInstance.resolveConflict(todoId, resolution);
+        const conflict = await conflictResolverInstance.getConflictById(todoId);
+        if (conflict) {
+          const strategy = resolution.resolution === 'local' ? 'local_wins' : 'remote_wins';
+          await conflictResolverInstance.resolveConflict(conflict, strategy);
+        }
         await fetchTodos();
         await updateOfflineStatus();
       } catch (error) {

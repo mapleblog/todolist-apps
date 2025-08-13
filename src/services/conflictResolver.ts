@@ -1,6 +1,7 @@
-import { Todo } from '../types';
+import { Todo, TodoPriority } from '../types';
 import { OfflineTodo, OfflineStorageService } from './offlineStorage';
 import todoService from './todoService';
+import { auth } from '../config/firebase';
 
 export interface ConflictData {
   todoId: string;
@@ -189,11 +190,15 @@ export class ConflictResolverService {
       dueDate: localTodo.dueDate
     };
     
-    await todoService.updateTodo(localTodo.id, updateData);
+    const user = await this.getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    await todoService.updateTodo(localTodo.id, user.uid, updateData);
     
     return {
       ...localTodo,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date()
     };
   }
 
@@ -229,7 +234,7 @@ export class ConflictResolverService {
       completed: this.resolveCompletionStatus(local, remote),
       
       // For priority, prefer higher priority if different
-      priority: this.resolvePriority(local.priority, remote.priority),
+      priority: this.resolvePriority(local.priority, remote.priority) as TodoPriority,
       
       // For category, prefer non-empty
       category: this.preferNonEmpty(local.category, remote.category) || remote.category,
@@ -248,11 +253,15 @@ export class ConflictResolverService {
       dueDate: merged.dueDate
     };
     
-    await todoService.updateTodo(merged.id, updateData);
+    const user = await this.getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    await todoService.updateTodo(merged.id, user.uid, updateData);
     
     return {
       ...merged,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date()
     };
   }
 
@@ -275,11 +284,15 @@ export class ConflictResolverService {
       dueDate: merged.dueDate
     };
     
-    await todoService.updateTodo(merged.id, updateData);
+    const user = await this.getCurrentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    await todoService.updateTodo(merged.id, user.uid, updateData);
     
     return {
       ...merged,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date()
     };
   }
 
@@ -294,7 +307,7 @@ export class ConflictResolverService {
     return local || remote;
   }
 
-  private resolveCompletionStatus(local: OfflineTodo, remote: Todo): boolean {
+  private resolveCompletionStatus(local: OfflineTodo, _remote: Todo): boolean {
     // If completion status is different, prefer the local change
     // as it's more likely to be intentional
     return local.completed;
@@ -309,7 +322,7 @@ export class ConflictResolverService {
     return localOrder >= remoteOrder ? localPriority : remotePriority;
   }
 
-  private resolveDueDate(localDate: string | undefined, remoteDate: string | undefined): string | undefined {
+  private resolveDueDate(localDate: Date | undefined, remoteDate: Date | undefined): Date | undefined {
     if (!localDate && !remoteDate) return undefined;
     if (!localDate) return remoteDate;
     if (!remoteDate) return localDate;
@@ -363,6 +376,15 @@ export class ConflictResolverService {
     }
     
     return results;
+  }
+
+  private async getCurrentUser(): Promise<{ uid: string } | null> {
+    return new Promise((resolve) => {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        unsubscribe();
+        resolve(user ? { uid: user.uid } : null);
+      });
+    });
   }
 
   public destroy(): void {

@@ -14,12 +14,12 @@ import { Google as GoogleIcon } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
-  const { login, authState, error, clearError } = useAuth();
+  const { signIn, error, clearError, loading } = useAuth();
 
   const handleGoogleLogin = async () => {
     clearError();
     try {
-      await login();
+      await signIn();
     } catch (err) {
       console.error('Login failed:', err);
     }
@@ -97,14 +97,14 @@ const LoginPage: React.FC = () => {
                 size="large"
                 fullWidth
                 startIcon={
-                  authState === 'loading' ? (
+                  loading ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
                     <GoogleIcon />
                   )
                 }
                 onClick={handleGoogleLogin}
-                disabled={authState === 'loading'}
+                disabled={loading}
                 sx={{
                   py: 1.5,
                   fontSize: '1rem',
@@ -118,7 +118,7 @@ const LoginPage: React.FC = () => {
                   }
                 }}
               >
-                {authState === 'loading' ? 'Signing in...' : 'Continue with Google'}
+                {loading ? 'Signing in...' : 'Continue with Google'}
               </Button>
             </Box>
 

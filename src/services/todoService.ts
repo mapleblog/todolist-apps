@@ -10,7 +10,6 @@ import {
   where,
   orderBy,
   limit,
-  startAfter,
   serverTimestamp,
   Timestamp,
   QueryDocumentSnapshot,
@@ -135,7 +134,7 @@ export const getTodos = async (
       todos = todos.filter(
         (todo) =>
           todo.title.toLowerCase().includes(searchTerm) ||
-          todo.description.toLowerCase().includes(searchTerm)
+          (todo.description && todo.description.toLowerCase().includes(searchTerm))
       );
     }
 

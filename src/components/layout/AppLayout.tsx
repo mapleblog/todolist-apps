@@ -23,11 +23,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   title = 'TodoList',
   showUserProfile = true
 }) => {
-  const { user, authState } = useAuth();
+  const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const isAuthenticated = user && authState === 'authenticated';
+  const isAuthenticated = !!user;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

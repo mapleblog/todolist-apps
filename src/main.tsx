@@ -56,7 +56,7 @@ const theme = createTheme({
 });
 
 // Initialize performance tracking
-initializePerformanceTracking();
+initializePerformanceTracking().catch(console.error);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

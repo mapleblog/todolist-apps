@@ -3,7 +3,7 @@ import {
   Box,
   Avatar,
   Typography,
-  Button,
+
   Menu,
   MenuItem,
   ListItemIcon,
@@ -20,7 +20,7 @@ import {
   ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { User } from '../../types';
+
 
 interface UserProfileProps {
   variant?: 'compact' | 'full';
@@ -31,7 +31,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
   variant = 'full', 
   showMenu = true 
 }) => {
-  const { user, logout, authState } = useAuth();
+  const { user, signOut } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -46,13 +46,13 @@ const UserProfile: React.FC<UserProfileProps> = ({
   const handleLogout = async () => {
     handleMenuClose();
     try {
-      await logout();
+      await signOut();
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
-  if (!user || authState !== 'authenticated') {
+  if (!user) {
     return null;
   }
 
@@ -71,7 +71,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
         <Tooltip title={user.displayName || user.email}>
           <Avatar
             src={user.photoURL || undefined}
-            alt={user.displayName || user.email}
+            alt={user.displayName || user.email || 'User'}
             sx={{ width: 32, height: 32, fontSize: '0.875rem' }}
           >
             {!user.photoURL && (user.displayName ? getInitials(user.displayName) : <PersonIcon />)}
@@ -121,7 +121,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
     >
       <Avatar
         src={user.photoURL || undefined}
-        alt={user.displayName || user.email}
+        alt={user.displayName || user.email || 'User'}
         sx={{ width: 56, height: 56 }}
       >
         {!user.photoURL && (user.displayName ? getInitials(user.displayName) : <PersonIcon />)}

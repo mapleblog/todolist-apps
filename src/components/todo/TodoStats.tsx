@@ -22,9 +22,9 @@ import {
   Warning as WarningIcon,
   Today as TodayIcon
 } from '@mui/icons-material';
-import { Todo, TodoPriority } from '../../types';
+import { TodoPriority } from '../../types';
 import { useTodos } from '../../contexts/TodoContext';
-import { isBefore, startOfDay, format, isToday, isTomorrow, addDays } from 'date-fns';
+import { isBefore, startOfDay, isToday, isTomorrow, addDays } from 'date-fns';
 
 interface TodoStatsProps {
   compact?: boolean;
