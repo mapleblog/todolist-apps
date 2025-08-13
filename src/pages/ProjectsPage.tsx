@@ -11,10 +11,13 @@ import {
 
 import {
   ProjectList,
-  Project
+  ProjectForm,
+  Project,
+  CreateProjectData
 } from '../components/project';
 import { useProjects } from '../hooks/useProjects';
 import { useAuth } from '../contexts/AuthContext';
+import { createProject } from '../services/projectService';
 
 const ProjectsPage: React.FC = () => {
   const { user } = useAuth();
@@ -32,6 +35,7 @@ const ProjectsPage: React.FC = () => {
     message: string;
     severity: 'success' | 'error' | 'info' | 'warning';
   }>({ open: false, message: '', severity: 'success' });
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Load projects on component mount
   useEffect(() => {
@@ -58,6 +62,28 @@ const ProjectsPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete project:', error);
       showSnackbar('Failed to delete project. Please try again.', 'error');
+    }
+  };
+
+  const handleAddNew = () => {
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateProject = async (projectData: CreateProjectData) => {
+    if (!user) {
+      showSnackbar('Please log in to create a project.', 'error');
+      return;
+    }
+
+    try {
+      await createProject(user.uid, projectData);
+      showSnackbar('Project created successfully!', 'success');
+      setCreateDialogOpen(false);
+      // Refresh projects list
+      await fetchProjects();
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      showSnackbar('Failed to create project. Please try again.', 'error');
     }
   };
 
@@ -165,12 +191,16 @@ const ProjectsPage: React.FC = () => {
           loading={loading}
           onDelete={handleDeleteProject}
           onView={handleViewProject}
+          onAddNew={handleAddNew}
         />
       </Stack>
 
-
-
-
+      {/* Project Creation Dialog */}
+      <ProjectForm
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={handleCreateProject}
+      />
 
       {/* Snackbar for notifications */}
       <Snackbar
