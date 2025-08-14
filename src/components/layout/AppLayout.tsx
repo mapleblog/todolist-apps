@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from './Sidebar';
 import { DashboardPage, ProjectsPage, StudyPage, TodoPage } from '../../pages';
+import AccountSelectorDemo from '../../pages/AccountSelectorDemo';
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -45,6 +46,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         return <TodoPage />;
       case 'study':
         return <StudyPage />;
+      case 'account-selector-demo':
+        return <AccountSelectorDemo />;
       default:
         return <DashboardPage />;
     }

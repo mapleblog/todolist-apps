@@ -22,7 +22,8 @@ import {
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   Logout as LogoutIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  AccountCircle as AccountIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -59,6 +60,11 @@ const menuItems: MenuItem[] = [
     id: 'study',
     label: 'Study',
     icon: <StudyIcon />
+  },
+  {
+    id: 'account-selector-demo',
+    label: 'Account Demo',
+    icon: <AccountIcon />
   }
 ];
 
