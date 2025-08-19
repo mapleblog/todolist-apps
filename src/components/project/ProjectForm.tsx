@@ -28,6 +28,8 @@ interface ProjectFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateProjectData) => Promise<void>;
+  initialData?: Partial<CreateProjectData>;
+  isEdit?: boolean;
 }
 
 const PROJECT_COLORS = [
@@ -44,7 +46,9 @@ const PROJECT_COLORS = [
 const ProjectForm: React.FC<ProjectFormProps> = ({
   open,
   onClose,
-  onSubmit
+  onSubmit,
+  initialData,
+  isEdit = false
 }) => {
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
@@ -65,15 +69,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   useEffect(() => {
     if (open) {
       setFormData({
-        name: '',
-        description: '',
-        dueDate: undefined,
-        color: '#1976d2'
+        name: initialData?.name || '',
+        description: initialData?.description || '',
+        dueDate: initialData?.dueDate || undefined,
+        color: initialData?.color || '#1976d2'
       });
       setErrors({});
       setSubmitting(false);
     }
-  }, [open]);
+  }, [open, initialData]);
 
   const handleInputChange = (field: keyof CreateProjectData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -156,7 +160,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <ProjectIcon color="primary" />
             <Typography variant="h6" component="span">
-              Create New Project
+              {isEdit ? 'Edit Project' : 'Create New Project'}
             </Typography>
           </Box>
           <IconButton

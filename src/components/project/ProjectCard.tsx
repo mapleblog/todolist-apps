@@ -11,21 +11,22 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Stack,
-  Avatar,
   Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Fade,
-  Grow
+  Avatar,
+  Stack,
+  Grow,
+  Fade
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
+  Edit as EditIcon,
   Schedule as ScheduleIcon,
   CheckCircle as CheckCircleIcon,
   PlayArrow as PlayArrowIcon,
@@ -66,6 +67,7 @@ interface ProjectCardProps {
   project: Project;
   onDelete: (projectId: string) => void;
   onView: (project: Project) => void;
+  onEdit?: (project: Project) => void;
   onStatusChange?: (projectId: string, status: Project['status']) => void;
 }
 
@@ -73,6 +75,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   onDelete,
   onView,
+  onEdit,
   onStatusChange
 }) => {
 
@@ -103,6 +106,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     handleMenuClose();
     onView(project);
     setViewDialogOpen(true);
+  };
+
+  const handleEdit = () => {
+    handleMenuClose();
+    if (onEdit) {
+      onEdit(project);
+    }
   };
 
   const handleConfirmDelete = () => {
@@ -632,6 +642,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </ListItemIcon>
           <ListItemText>View Details</ListItemText>
         </MenuItem>
+        {onEdit && (
+          <MenuItem onClick={handleEdit}>
+            <ListItemIcon>
+              <EditIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Edit Project</ListItemText>
+          </MenuItem>
+        )}
 
         <Divider />
         {project.status !== 'active' && (
