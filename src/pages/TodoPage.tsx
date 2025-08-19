@@ -18,9 +18,9 @@ import {
   Drawer,
   Button,
   LinearProgress,
-  Divider,
   Stack,
   Checkbox,
+  FormControlLabel,
   useTheme,
   alpha,
   Dialog,
@@ -35,7 +35,6 @@ import {
   Assignment as AssignmentIcon,
   CheckCircle as CheckCircleIcon,
   Schedule as ScheduleIcon,
-  Close as CloseIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Flag as FlagIcon,
@@ -444,7 +443,8 @@ const TodoPage: React.FC = () => {
     loading,
     deleteTodoItem,
     toggleComplete,
-    addTodo
+    addTodo,
+    updateTodoItem
   } = useTodos();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -454,6 +454,18 @@ const TodoPage: React.FC = () => {
   const [selectedTodos, setSelectedTodos] = useState<string[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // State for edit form
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    dueDate: '',
+    category: '',
+    completed: false
+  });
+  const [editFormErrors, setEditFormErrors] = useState<{ [key: string]: string }>({});
+  const [editFormLoading, setEditFormLoading] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showScheduleReview, setShowScheduleReview] = useState(false);
@@ -498,6 +510,60 @@ const TodoPage: React.FC = () => {
   const handleScheduleReview = () => {
     setShowScheduleReview(true);
     console.log('Opening schedule review');
+  };
+  
+  // Handle save edit
+  const handleSaveEdit = async () => {
+    if (!selectedTodo) return;
+    
+    // Validate form
+    const errors: { [key: string]: string } = {};
+    if (!editFormData.title.trim()) {
+      errors.title = 'Title is required';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setEditFormErrors(errors);
+      return;
+    }
+    
+    try {
+      setEditFormLoading(true);
+      setEditFormErrors({});
+      
+      const updateData = {
+        title: editFormData.title.trim(),
+        description: editFormData.description.trim() || undefined,
+        priority: editFormData.priority,
+        dueDate: editFormData.dueDate ? new Date(editFormData.dueDate) : undefined,
+        category: editFormData.category.trim() || undefined,
+        completed: editFormData.completed
+      };
+      
+      await updateTodoItem(selectedTodo.id, updateData);
+      setSidebarOpen(false);
+      setSelectedTodo(null);
+    } catch (error) {
+      console.error('Failed to update todo:', error);
+      setEditFormErrors({ general: 'Failed to update task. Please try again.' });
+    } finally {
+      setEditFormLoading(false);
+    }
+  };
+  
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setSidebarOpen(false);
+    setSelectedTodo(null);
+    setEditFormData({
+      title: '',
+      description: '',
+      priority: 'medium',
+      dueDate: '',
+      category: '',
+      completed: false
+    });
+    setEditFormErrors({});
   };
   
   // 筛选和排序逻辑
@@ -584,7 +650,7 @@ const TodoPage: React.FC = () => {
                   mb: 1
                 }}
               >
-                Task Management Dashboard
+                My Tasks
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Stay organized and boost your productivity
@@ -881,6 +947,16 @@ const TodoPage: React.FC = () => {
                         todo={todo}
                         onEdit={(todo) => {
                           setSelectedTodo(todo);
+                          // Initialize edit form with selected todo data
+                          setEditFormData({
+                            title: todo.title,
+                            description: todo.description || '',
+                            priority: todo.priority,
+                            dueDate: todo.dueDate ? new Date(todo.dueDate).toISOString().split('T')[0] : '',
+                            category: todo.category || '',
+                            completed: todo.completed
+                          });
+                          setEditFormErrors({});
                           setSidebarOpen(true);
                         }}
                         onDelete={(id) => deleteTodoItem(id)}
@@ -904,7 +980,7 @@ const TodoPage: React.FC = () => {
         
 
         
-        {/* 任务详情侧边栏 */}
+        {/* Sidebar for Task Edit Form */}
         <Drawer
           anchor="right"
           open={sidebarOpen}
@@ -912,70 +988,92 @@ const TodoPage: React.FC = () => {
           sx={{
             '& .MuiDrawer-paper': {
               width: 400,
-              p: 3
-            }
+              padding: 2,
+            },
           }}
         >
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-            <Typography variant="h6" fontWeight="bold">
-              Task Details
-            </Typography>
-            <IconButton onClick={() => setSidebarOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          
           {selectedTodo && (
             <Box>
-              <Typography variant="h6" mb={2}>
-                {selectedTodo.title}
+              <Typography variant="h6" gutterBottom>
+                Edit Task
               </Typography>
-              
-              {selectedTodo.description && (
-                <Box mb={2}>
-                  <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                    Description
-                  </Typography>
-                  <Typography variant="body2">
-                    {selectedTodo.description}
-                  </Typography>
+              <Box component="form" sx={{ mt: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                  margin="normal"
+                  required
+                  error={!!editFormErrors.title}
+                  helperText={editFormErrors.title}
+                />
+                <TextField
+                  fullWidth
+                  label="Description"
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  margin="normal"
+                  multiline
+                  rows={3}
+                />
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Priority</InputLabel>
+                  <Select
+                    value={editFormData.priority}
+                    onChange={(e) => setEditFormData({ ...editFormData, priority: e.target.value as 'low' | 'medium' | 'high' })}
+                    label="Priority"
+                  >
+                    <MenuItem value="low">Low</MenuItem>
+                    <MenuItem value="medium">Medium</MenuItem>
+                    <MenuItem value="high">High</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Due Date"
+                  type="date"
+                  value={editFormData.dueDate}
+                  onChange={(e) => setEditFormData({ ...editFormData, dueDate: e.target.value })}
+                  margin="normal"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  label="Category"
+                  value={editFormData.category}
+                  onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                  margin="normal"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={editFormData.completed}
+                      onChange={(e) => setEditFormData({ ...editFormData, completed: e.target.checked })}
+                    />
+                  }
+                  label="Completed"
+                  sx={{ mt: 2, mb: 2 }}
+                />
+                <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleSaveEdit}
+                    disabled={editFormLoading || !editFormData.title.trim()}
+                    fullWidth
+                  >
+                    {editFormLoading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleCancelEdit}
+                    fullWidth
+                  >
+                    Cancel
+                  </Button>
                 </Box>
-              )}
-              
-              <Divider sx={{ my: 2 }} />
-              
-              <Box mb={2}>
-                <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                  Status
-                </Typography>
-                <Chip label={selectedTodo.completed ? 'completed' : 'pending'} size="small" />
-              </Box>
-              
-              <Box mb={2}>
-                <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                  Priority
-                </Typography>
-                <Chip label={selectedTodo.priority} size="small" />
-              </Box>
-              
-              {selectedTodo.dueDate && (
-                <Box mb={2}>
-                  <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                    Due Date
-                  </Typography>
-                  <Typography variant="body2">
-                    {format(new Date(selectedTodo.dueDate), 'PPP')}
-                  </Typography>
-                </Box>
-              )}
-              
-              <Box mb={2}>
-                <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                  Created
-                </Typography>
-                <Typography variant="body2">
-                  {format(new Date(selectedTodo.createdAt), 'PPP')}
-                </Typography>
               </Box>
             </Box>
           )}
