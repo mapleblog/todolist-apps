@@ -42,7 +42,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { ProjectList, ProjectForm } from '../components/project';
 import { Project, CreateProjectData } from '../services/projectService';
 
-const ProjectsPage: React.FC = () => {
+interface ProjectsPageProps {
+  onProjectSelect?: (projectId: string) => void;
+}
+
+const ProjectsPage: React.FC<ProjectsPageProps> = ({ onProjectSelect }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { } = useAuth();
@@ -173,10 +177,12 @@ const ProjectsPage: React.FC = () => {
   };
 
   const handleViewProject = (project: Project) => {
-    // Navigate to project detail page or show project details
-    showSnackbar(`Viewing project: ${project.name}`, 'info');
-    // TODO: Add navigation to project detail page
-    console.log('View project:', project);
+    if (onProjectSelect) {
+      onProjectSelect(project.id);
+    } else {
+      showSnackbar(`Viewing project: ${project.name}`, 'info');
+      console.log('View project:', project);
+    }
   };
 
   const handleEditProject = (project: Project) => {

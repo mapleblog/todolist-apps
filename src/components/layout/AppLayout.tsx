@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from './Sidebar';
 import { DashboardPage, ProjectsPage, StudyPage, TodoPage } from '../../pages';
+import ProjectDetailPage from '../../pages/ProjectDetailPage';
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -21,6 +22,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('dashboard');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   const isAuthenticated = !!user;
 
@@ -30,9 +32,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const handleMenuItemSelect = (item: string) => {
     setSelectedMenuItem(item);
+    setSelectedProjectId(null); // Clear project selection when changing menu
     if (isMobile) {
       setSidebarOpen(false);
     }
+  };
+
+  const handleProjectSelect = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setSelectedMenuItem('project-detail');
+  };
+
+  const handleBackToProjects = () => {
+    setSelectedProjectId(null);
+    setSelectedMenuItem('projects');
   };
 
   const renderPageContent = () => {
@@ -40,7 +53,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       case 'dashboard':
         return <DashboardPage />;
       case 'projects':
-        return <ProjectsPage />;
+        return selectedProjectId ? (
+          <ProjectDetailPage 
+            projectId={selectedProjectId} 
+            onBack={handleBackToProjects}
+          />
+        ) : (
+          <ProjectsPage onProjectSelect={handleProjectSelect} />
+        );
+      case 'project-detail':
+        return selectedProjectId ? (
+          <ProjectDetailPage 
+            projectId={selectedProjectId} 
+            onBack={handleBackToProjects}
+          />
+        ) : (
+          <ProjectsPage onProjectSelect={handleProjectSelect} />
+        );
       case 'tasks':
         return <TodoPage />;
       case 'study':

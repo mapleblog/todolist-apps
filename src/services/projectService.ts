@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { FirebaseError } from '@/types';
+import { getTasksByProject } from './taskService';
 
 const PROJECTS_COLLECTION = 'projects';
 
@@ -65,11 +66,11 @@ const convertFirestoreDoc = (doc: QueryDocumentSnapshot<DocumentData>): Project 
     progress: data.progress || 0,
     tasksCount: data.tasksCount || 0,
     completedTasks: data.completedTasks || 0,
-    dueDate: data.dueDate ? (data.dueDate as Timestamp).toDate() : undefined,
+    dueDate: data.dueDate && data.dueDate.toDate ? (data.dueDate as Timestamp).toDate() : undefined,
     color: data.color || '#1976d2',
     userId: data.userId,
-    createdAt: (data.createdAt as Timestamp).toDate(),
-    updatedAt: (data.updatedAt as Timestamp).toDate(),
+    createdAt: data.createdAt && data.createdAt.toDate ? (data.createdAt as Timestamp).toDate() : new Date(),
+    updatedAt: data.updatedAt && data.updatedAt.toDate ? (data.updatedAt as Timestamp).toDate() : new Date(),
   };
 };
 
@@ -251,6 +252,113 @@ export const getProjectsCount = async (
   }
 };
 
+/**
+ * Calculate and update project progress based on tasks
+ */
+export const updateProjectProgress = async (
+  projectId: string,
+  userId: string
+): Promise<void> => {
+  try {
+    // Get all tasks for this project
+    const tasks = await getTasksByProject(projectId, userId);
+    
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.status === 'completed').length;
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    
+    // Update project with new progress data
+    await updateProject(projectId, userId, {
+      tasksCount: totalTasks,
+      completedTasks,
+      progress,
+    });
+  } catch (error) {
+    const firebaseError = error as FirebaseError;
+    console.error('Error updating project progress:', firebaseError);
+    throw new Error(firebaseError.message || 'Failed to update project progress');
+  }
+};
+
+/**
+ * Get project statistics including task breakdown
+ */
+export const getProjectStatistics = async (
+  projectId: string,
+  userId: string
+): Promise<{
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  todoTasks: number;
+  progress: number;
+  overdueTasks: number;
+}> => {
+  try {
+    const tasks = await getTasksByProject(projectId, userId);
+    const now = new Date();
+    
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.status === 'completed').length;
+    const inProgressTasks = tasks.filter(task => task.status === 'in-progress').length;
+    const todoTasks = tasks.filter(task => task.status === 'todo').length;
+    const overdueTasks = tasks.filter(task => 
+      task.dueDate && 
+      task.dueDate < now && 
+      task.status !== 'completed'
+    ).length;
+    
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    
+    return {
+      totalTasks,
+      completedTasks,
+      inProgressTasks,
+      todoTasks,
+      progress,
+      overdueTasks,
+    };
+  } catch (error) {
+    const firebaseError = error as FirebaseError;
+    console.error('Error getting project statistics:', firebaseError);
+    throw new Error(firebaseError.message || 'Failed to get project statistics');
+  }
+};
+
+/**
+ * Auto-update project status based on progress
+ */
+export const autoUpdateProjectStatus = async (
+  projectId: string,
+  userId: string
+): Promise<void> => {
+  try {
+    const project = await getProjectById(projectId, userId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+    
+    let newStatus = project.status;
+    
+    // Auto-complete project if all tasks are completed
+    if (project.progress === 100 && project.status !== 'completed') {
+      newStatus = 'completed';
+    }
+    // Reactivate project if it was completed but now has incomplete tasks
+    else if (project.progress < 100 && project.status === 'completed') {
+      newStatus = 'active';
+    }
+    
+    if (newStatus !== project.status) {
+      await updateProject(projectId, userId, { status: newStatus });
+    }
+  } catch (error) {
+    const firebaseError = error as FirebaseError;
+    console.error('Error auto-updating project status:', firebaseError);
+    throw new Error(firebaseError.message || 'Failed to auto-update project status');
+  }
+};
+
 const projectService = {
   createProject,
   getProjects,
@@ -258,6 +366,9 @@ const projectService = {
   updateProject,
   deleteProject,
   getProjectsCount,
+  updateProjectProgress,
+  getProjectStatistics,
+  autoUpdateProjectStatus,
 };
 
 export default projectService;

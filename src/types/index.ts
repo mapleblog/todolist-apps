@@ -239,3 +239,153 @@ export interface QueueStatus {
   isProcessing: boolean;
   lastProcessed?: number;
 }
+
+// Project and Task related types
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'completed' | 'on-hold';
+  progress: number;
+  tasksCount: number;
+  completedTasks: number;
+  dueDate?: Date;
+  color: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateProjectData {
+  name: string;
+  description: string;
+  dueDate?: Date;
+  color?: string;
+}
+
+export interface UpdateProjectData {
+  name?: string;
+  description?: string;
+  status?: 'active' | 'completed' | 'on-hold';
+  progress?: number;
+  tasksCount?: number;
+  completedTasks?: number;
+  dueDate?: Date;
+  color?: string;
+}
+
+// Task types
+export type TaskStatus = 'todo' | 'in-progress' | 'completed';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  projectId: string;
+  userId: string;
+  dueDate?: Date;
+  estimatedHours?: number;
+  actualHours?: number;
+  tags?: string[];
+  assignedTo?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  completedAt?: Date;
+}
+
+export interface CreateTaskData {
+  title: string;
+  description?: string;
+  priority?: TaskPriority;
+  dueDate?: Date;
+  estimatedHours?: number;
+  tags?: string[];
+  assignedTo?: string;
+}
+
+export interface UpdateTaskData {
+  title?: string;
+  description?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  dueDate?: Date;
+  estimatedHours?: number;
+  actualHours?: number;
+  tags?: string[];
+  assignedTo?: string;
+  completedAt?: Date;
+}
+
+// Task filter and sort types
+export interface TaskFilters {
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  search?: string;
+  dueDateRange?: {
+    start?: Date;
+    end?: Date;
+  };
+  dueDateFrom?: Date;
+  dueDateTo?: Date;
+  tags?: string[];
+  assignedTo?: string;
+}
+
+export type TaskSortBy = 'createdAt' | 'updatedAt' | 'dueDate' | 'priority' | 'title' | 'status';
+
+export interface TaskSortOptions {
+  sortBy: TaskSortBy;
+  order: SortOrder;
+}
+
+// Component prop types for tasks
+export interface TaskItemProps {
+  task: Task;
+  onUpdate: (id: string, data: UpdateTaskData) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  onStatusChange: (id: string, status: TaskStatus) => Promise<void>;
+}
+
+export interface TaskFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: CreateTaskData | UpdateTaskData) => Promise<void>;
+  initialData?: Partial<CreateTaskData | UpdateTaskData>;
+  isEdit?: boolean;
+  projectId: string;
+}
+
+export interface TaskListProps {
+  tasks: Task[];
+  loading?: boolean;
+  onUpdate: (id: string, data: UpdateTaskData) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  onStatusChange: (id: string, status: TaskStatus) => Promise<void>;
+  onAddNew?: () => void;
+}
+
+export interface TaskFiltersProps {
+  filters: TaskFilters;
+  onFiltersChange: (filters: TaskFilters) => void;
+  sortOptions: TaskSortOptions;
+  onSortChange: (sortOptions: TaskSortOptions) => void;
+}
+
+// Project detail page props
+export interface ProjectDetailProps {
+  projectId: string;
+}
+
+// Progress calculation types
+export interface ProjectProgress {
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  todoTasks: number;
+  progressPercentage: number;
+  estimatedHours: number;
+  actualHours: number;
+}
