@@ -15,36 +15,38 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Fab,
   Drawer,
   Button,
   LinearProgress,
   Divider,
   Stack,
   Checkbox,
-  Tooltip,
   useTheme,
-  alpha
+  alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Add as AddIcon,
-  FilterList as FilterIcon,
-  Sort as SortIcon,
   Today as TodayIcon,
   Assignment as AssignmentIcon,
   CheckCircle as CheckCircleIcon,
   Schedule as ScheduleIcon,
   Close as CloseIcon,
-
   Edit as EditIcon,
   Delete as DeleteIcon,
   Flag as FlagIcon,
-
+  Dashboard as DashboardIcon,
+  TrendingUp as TrendingUpIcon,
+  AccessTime as AccessTimeIcon
 } from '@mui/icons-material';
 import { useTodos } from '../hooks/useTodos';
-import { Todo, TodoPriority } from '../types';
+import { Todo, TodoPriority, CreateTodoData } from '@/types';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
+import TodoForm from '../components/todo/TodoForm';
 
 
 
@@ -107,7 +109,11 @@ const TodayFocus: React.FC<{ todos: Todo[] }> = ({ todos }) => {
 };
 
 // 快速操作面板组件
-const QuickActions: React.FC = () => {
+const QuickActions: React.FC<{
+  onAddNewTask: () => void;
+  onViewDashboard: () => void;
+  onScheduleReview: () => void;
+}> = ({ onAddNewTask, onViewDashboard, onScheduleReview }) => {
   return (
     <Card sx={{ height: '100%' }}>
       <CardContent>
@@ -120,7 +126,16 @@ const QuickActions: React.FC = () => {
             variant="outlined" 
             startIcon={<AddIcon />}
             fullWidth
-            sx={{ justifyContent: 'flex-start' }}
+            onClick={onAddNewTask}
+            sx={{ 
+              justifyContent: 'flex-start',
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease'
+            }}
           >
             Add New Task
           </Button>
@@ -129,7 +144,16 @@ const QuickActions: React.FC = () => {
             variant="outlined" 
             startIcon={<AssignmentIcon />}
             fullWidth
-            sx={{ justifyContent: 'flex-start' }}
+            onClick={onViewDashboard}
+            sx={{ 
+              justifyContent: 'flex-start',
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease'
+            }}
           >
             View Dashboard
           </Button>
@@ -138,7 +162,16 @@ const QuickActions: React.FC = () => {
             variant="outlined" 
             startIcon={<ScheduleIcon />}
             fullWidth
-            sx={{ justifyContent: 'flex-start' }}
+            onClick={onScheduleReview}
+            sx={{ 
+              justifyContent: 'flex-start',
+              '&:hover': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                transform: 'translateY(-1px)'
+              },
+              transition: 'all 0.2s ease'
+            }}
           >
             Schedule Review
           </Button>
@@ -158,6 +191,7 @@ const SmartFilterBar: React.FC<{
   onPriorityFilterChange: (priority: TodoPriority | 'all') => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
+  onNewTask: () => void;
 }> = ({ 
   searchTerm, 
   onSearchChange, 
@@ -166,7 +200,8 @@ const SmartFilterBar: React.FC<{
   priorityFilter,
   onPriorityFilterChange,
   sortBy,
-  onSortChange 
+  onSortChange,
+  onNewTask
 }) => {
   return (
     <Paper 
@@ -246,18 +281,24 @@ const SmartFilterBar: React.FC<{
         </Grid>
         
         <Grid item xs={12} md={2}>
-          <Box display="flex" gap={1}>
-            <Tooltip title="Filter">
-              <IconButton size="small">
-                <FilterIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Sort">
-              <IconButton size="small">
-                <SortIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={onNewTask}
+            fullWidth
+            sx={{
+              backgroundColor: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.dark',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
+              },
+              transition: 'all 0.2s ease',
+              fontWeight: 'medium'
+            }}
+          >
+            New Task
+          </Button>
         </Grid>
       </Grid>
     </Paper>
@@ -402,7 +443,8 @@ const TodoPage: React.FC = () => {
     todos,
     loading,
     deleteTodoItem,
-    toggleComplete
+    toggleComplete,
+    addTodo
   } = useTodos();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -412,6 +454,51 @@ const TodoPage: React.FC = () => {
   const [selectedTodos, setSelectedTodos] = useState<string[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showScheduleReview, setShowScheduleReview] = useState(false);
+  
+  // Dashboard统计数据
+  const dashboardStats = useMemo(() => {
+    const total = todos.length;
+    const completed = todos.filter(todo => todo.completed).length;
+    const pending = total - completed;
+    const overdue = todos.filter(todo => 
+      !todo.completed && todo.dueDate && isPast(new Date(todo.dueDate))
+    ).length;
+    const today = todos.filter(todo => 
+      todo.dueDate && isToday(new Date(todo.dueDate))
+    ).length;
+    const highPriority = todos.filter(todo => 
+      !todo.completed && todo.priority === 'high'
+    ).length;
+    
+    return {
+      total,
+      completed,
+      pending,
+      overdue,
+      today,
+      highPriority,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0
+    };
+  }, [todos]);
+  
+  // 处理函数
+  const handleNewTask = () => {
+    setShowTaskForm(true);
+    console.log('Opening new task form');
+  };
+  
+  const handleViewDashboard = () => {
+    setShowDashboard(true);
+    console.log('Opening dashboard view');
+  };
+  
+  const handleScheduleReview = () => {
+    setShowScheduleReview(true);
+    console.log('Opening schedule review');
+  };
   
   // 筛选和排序逻辑
   const filteredAndSortedTodos = useMemo(() => {
@@ -688,7 +775,11 @@ const TodoPage: React.FC = () => {
                 alignItems: 'stretch',
                 minHeight: '300px'
               }}>
-                <QuickActions />
+                <QuickActions 
+              onAddNewTask={handleNewTask}
+              onViewDashboard={handleViewDashboard}
+              onScheduleReview={handleScheduleReview}
+            />
               </CardContent>
             </Card>
           </Grid>
@@ -703,15 +794,16 @@ const TodoPage: React.FC = () => {
         }}>
           <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 3.5 } }}>
             <SmartFilterBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              priorityFilter={priorityFilter}
-              onPriorityFilterChange={setPriorityFilter}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-            />
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            priorityFilter={priorityFilter}
+            onPriorityFilterChange={setPriorityFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            onNewTask={handleNewTask}
+          />
           </CardContent>
         </Card>
         
@@ -810,24 +902,7 @@ const TodoPage: React.FC = () => {
           </CardContent>
         </Card>
         
-        {/* Add Task Button */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-          <Fab
-            color="primary"
-            aria-label="add task"
-            sx={{
-              boxShadow: '0 8px 32px rgba(25, 118, 210, 0.3)',
-              '&:hover': {
-                boxShadow: '0 12px 40px rgba(25, 118, 210, 0.4)',
-                transform: 'translateY(-2px)'
-              },
-              transition: 'all 0.3s ease'
-            }}
-            onClick={() => console.log('Add new task')}
-          >
-            <AddIcon />
-          </Fab>
-        </Box>
+
         
         {/* 任务详情侧边栏 */}
         <Drawer
@@ -905,8 +980,344 @@ const TodoPage: React.FC = () => {
             </Box>
           )}
         </Drawer>
-        </Stack>
-      </Container>
+        
+        {/* TodoForm Dialog */}
+        <TodoForm
+          open={showTaskForm}
+          onClose={() => setShowTaskForm(false)}
+          onSubmit={async (todoData) => {
+            try {
+              await addTodo(todoData as CreateTodoData);
+              setShowTaskForm(false);
+              console.log('Task created successfully');
+            } catch (error) {
+              console.error('Error creating task:', error);
+            }
+          }}
+        />
+        
+        {/* Dashboard Dialog */}
+        <Dialog
+          open={showDashboard}
+          onClose={() => setShowDashboard(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box display="flex" alignItems="center">
+              <DashboardIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <Typography variant="h6" fontWeight="bold">
+                Task Dashboard
+              </Typography>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={3}>
+              {/* Overview Cards */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h3" color="primary.main" fontWeight="bold">
+                    {dashboardStats.total}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Tasks
+                  </Typography>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h3" color="success.main" fontWeight="bold">
+                    {dashboardStats.completed}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Completed
+                  </Typography>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h3" color="warning.main" fontWeight="bold">
+                    {dashboardStats.pending}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Pending
+                  </Typography>
+                </Card>
+              </Grid>
+              
+              {/* Progress Section */}
+              <Grid item xs={12}>
+                <Card sx={{ p: 3 }}>
+                  <Box display="flex" alignItems="center" mb={2}>
+                    <TrendingUpIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6" fontWeight="bold">
+                      Completion Progress
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <Typography variant="body2" sx={{ minWidth: 80 }}>
+                      {dashboardStats.completionRate}%
+                    </Typography>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={dashboardStats.completionRate} 
+                      sx={{ flex: 1, mx: 2, height: 8, borderRadius: 4 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      {dashboardStats.completed}/{dashboardStats.total}
+                    </Typography>
+                  </Box>
+                </Card>
+              </Grid>
+              
+              {/* Quick Stats */}
+              <Grid item xs={12} sm={6}>
+                <Card sx={{ p: 2 }}>
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <AccessTimeIcon sx={{ mr: 1, color: 'error.main' }} />
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      Overdue Tasks
+                    </Typography>
+                  </Box>
+                  <Typography variant="h4" color="error.main" fontWeight="bold">
+                    {dashboardStats.overdue}
+                  </Typography>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Card sx={{ p: 2 }}>
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <TodayIcon sx={{ mr: 1, color: 'info.main' }} />
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      Due Today
+                    </Typography>
+                  </Box>
+                  <Typography variant="h4" color="info.main" fontWeight="bold">
+                    {dashboardStats.today}
+                  </Typography>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Card sx={{ p: 2 }}>
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <FlagIcon sx={{ mr: 1, color: 'warning.main' }} />
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      High Priority Tasks
+                    </Typography>
+                  </Box>
+                  <Typography variant="h4" color="warning.main" fontWeight="bold">
+                    {dashboardStats.highPriority}
+                  </Typography>
+                </Card>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowDashboard(false)} variant="contained">
+              Close
+            </Button>
+          </DialogActions>
+         </Dialog>
+         
+         {/* Schedule Review Dialog */}
+         <Dialog
+           open={showScheduleReview}
+           onClose={() => setShowScheduleReview(false)}
+           maxWidth="md"
+           fullWidth
+         >
+           <DialogTitle>
+             <Box display="flex" alignItems="center">
+               <ScheduleIcon sx={{ mr: 1, color: 'primary.main' }} />
+               <Typography variant="h6" fontWeight="bold">
+                 Schedule Review
+               </Typography>
+             </Box>
+           </DialogTitle>
+           <DialogContent>
+             <Grid container spacing={3}>
+               {/* Today's Tasks */}
+               <Grid item xs={12}>
+                 <Card sx={{ p: 2 }}>
+                   <Typography variant="h6" fontWeight="bold" mb={2}>
+                     Today's Tasks ({todos.filter(todo => todo.dueDate && isToday(new Date(todo.dueDate))).length})
+                   </Typography>
+                   {todos.filter(todo => todo.dueDate && isToday(new Date(todo.dueDate))).length === 0 ? (
+                     <Typography variant="body2" color="text.secondary" textAlign="center" py={2}>
+                       No tasks scheduled for today. Enjoy your free time! 🎉
+                     </Typography>
+                   ) : (
+                     <Stack spacing={1}>
+                       {todos
+                         .filter(todo => todo.dueDate && isToday(new Date(todo.dueDate)))
+                         .map(todo => (
+                           <Box 
+                             key={todo.id}
+                             sx={{ 
+                               p: 2, 
+                               borderRadius: 1, 
+                               backgroundColor: todo.completed ? alpha('#4caf50', 0.1) : alpha('#2196f3', 0.1),
+                               border: `1px solid ${todo.completed ? alpha('#4caf50', 0.3) : alpha('#2196f3', 0.3)}`,
+                               display: 'flex',
+                               alignItems: 'center',
+                               justifyContent: 'space-between'
+                             }}
+                           >
+                             <Box display="flex" alignItems="center">
+                               {todo.completed ? (
+                                 <CheckCircleIcon sx={{ color: 'success.main', mr: 1 }} />
+                               ) : (
+                                 <Box sx={{ 
+                                   width: 20, 
+                                   height: 20, 
+                                   borderRadius: '50%', 
+                                   border: '2px solid', 
+                                   borderColor: 'primary.main',
+                                   mr: 1 
+                                 }} />
+                               )}
+                               <Box>
+                                 <Typography 
+                                   variant="body1" 
+                                   fontWeight="medium"
+                                   sx={{ 
+                                     textDecoration: todo.completed ? 'line-through' : 'none',
+                                     color: todo.completed ? 'text.secondary' : 'text.primary'
+                                   }}
+                                 >
+                                   {todo.title}
+                                 </Typography>
+                                 {todo.description && (
+                                   <Typography variant="body2" color="text.secondary">
+                                     {todo.description}
+                                   </Typography>
+                                 )}
+                               </Box>
+                             </Box>
+                             <Box display="flex" alignItems="center">
+                               {todo.priority === 'high' && (
+                                 <Chip 
+                                   label="High" 
+                                   size="small" 
+                                   color="error" 
+                                   sx={{ mr: 1 }}
+                                 />
+                               )}
+                               {todo.priority === 'medium' && (
+                                 <Chip 
+                                   label="Medium" 
+                                   size="small" 
+                                   color="warning" 
+                                   sx={{ mr: 1 }}
+                                 />
+                               )}
+                               {todo.priority === 'low' && (
+                                 <Chip 
+                                   label="Low" 
+                                   size="small" 
+                                   color="info" 
+                                   sx={{ mr: 1 }}
+                                 />
+                               )}
+                             </Box>
+                           </Box>
+                         ))
+                       }
+                     </Stack>
+                   )}
+                 </Card>
+               </Grid>
+               
+               {/* Upcoming Tasks */}
+               <Grid item xs={12} md={6}>
+                 <Card sx={{ p: 2 }}>
+                   <Typography variant="h6" fontWeight="bold" mb={2}>
+                     Tomorrow's Tasks
+                   </Typography>
+                   {todos.filter(todo => todo.dueDate && isTomorrow(new Date(todo.dueDate))).length === 0 ? (
+                     <Typography variant="body2" color="text.secondary" textAlign="center" py={1}>
+                       No tasks for tomorrow
+                     </Typography>
+                   ) : (
+                     <Stack spacing={1}>
+                       {todos
+                         .filter(todo => todo.dueDate && isTomorrow(new Date(todo.dueDate)))
+                         .slice(0, 3)
+                         .map(todo => (
+                           <Box key={todo.id} sx={{ p: 1, borderRadius: 1, backgroundColor: 'grey.50' }}>
+                             <Typography variant="body2" fontWeight="medium">
+                               {todo.title}
+                             </Typography>
+                           </Box>
+                         ))
+                       }
+                       {todos.filter(todo => todo.dueDate && isTomorrow(new Date(todo.dueDate))).length > 3 && (
+                         <Typography variant="caption" color="text.secondary">
+                           +{todos.filter(todo => todo.dueDate && isTomorrow(new Date(todo.dueDate))).length - 3} more
+                         </Typography>
+                       )}
+                     </Stack>
+                   )}
+                 </Card>
+               </Grid>
+               
+               {/* Overdue Tasks */}
+               <Grid item xs={12} md={6}>
+                 <Card sx={{ p: 2 }}>
+                   <Typography variant="h6" fontWeight="bold" mb={2} color="error.main">
+                     Overdue Tasks
+                   </Typography>
+                   {todos.filter(todo => todo.dueDate && isPast(new Date(todo.dueDate)) && !todo.completed).length === 0 ? (
+                     <Typography variant="body2" color="text.secondary" textAlign="center" py={1}>
+                       No overdue tasks! 🎉
+                     </Typography>
+                   ) : (
+                     <Stack spacing={1}>
+                       {todos
+                         .filter(todo => todo.dueDate && isPast(new Date(todo.dueDate)) && !todo.completed)
+                         .slice(0, 3)
+                         .map(todo => (
+                           <Box 
+                             key={todo.id} 
+                             sx={{ 
+                               p: 1, 
+                               borderRadius: 1, 
+                               backgroundColor: alpha('#f44336', 0.1),
+                               border: `1px solid ${alpha('#f44336', 0.3)}`
+                             }}
+                           >
+                             <Typography variant="body2" fontWeight="medium" color="error.main">
+                               {todo.title}
+                             </Typography>
+                             <Typography variant="caption" color="error.main">
+                               Due: {format(new Date(todo.dueDate!), 'MMM dd')}
+                             </Typography>
+                           </Box>
+                         ))
+                       }
+                       {todos.filter(todo => todo.dueDate && isPast(new Date(todo.dueDate)) && !todo.completed).length > 3 && (
+                         <Typography variant="caption" color="error.main">
+                           +{todos.filter(todo => todo.dueDate && isPast(new Date(todo.dueDate)) && !todo.completed).length - 3} more overdue
+                         </Typography>
+                       )}
+                     </Stack>
+                   )}
+                 </Card>
+               </Grid>
+             </Grid>
+           </DialogContent>
+           <DialogActions>
+             <Button onClick={() => setShowScheduleReview(false)} variant="contained">
+               Close
+             </Button>
+           </DialogActions>
+         </Dialog>
+         </Stack>
+       </Container>
     </Box>
   );
 };
