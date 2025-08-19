@@ -20,7 +20,8 @@ import {
   TodoList,
   TodoForm,
   TodoFilters,
-  TodoStats,
+  TodoDashboard,
+  FloatingAddButton,
   Todo,
   TodoFilter,
   TodoSort
@@ -193,151 +194,212 @@ const TodoPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Stack spacing={3}>
-        {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" component="h1" fontWeight="bold">
-            My Todos
-          </Typography>
-          
+    <>
+      <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Stack spacing={4}>
+          {/* Header */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            mb: 2
+          }}>
+            <Box>
+              <Typography 
+                variant="h3" 
+                component="h1" 
+                fontWeight="700"
+                sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 1
+                }}
+              >
+                My Todos
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Organize your tasks efficiently and boost productivity
+              </Typography>
+            </Box>
+          </Box>
 
-        </Box>
+          {/* Error Display */}
+          {error && (
+            <Alert 
+              severity="error" 
+              onClose={() => {}}
+              sx={{ borderRadius: 2 }}
+            >
+              {error}
+            </Alert>
+          )}
 
-        {/* Error Display */}
-        {error && (
-          <Alert severity="error" onClose={() => {}}>
-            {error}
-          </Alert>
-        )}
+          {/* Dashboard */}
+          <TodoDashboard todos={todos} loading={loading} />
 
-        {/* Statistics */}
-        <TodoStats compact={isMobile} />
-
-        {/* Filters */}
-        <TodoFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          filter={filter}
-          onFilterChange={setFilter}
-          sort={sort}
-          onSortChange={setSort}
-        />
-
-        {/* Content */}
-        {loading ? (
-          <Paper sx={{ p: 3 }}>
-            <Stack spacing={2}>
-              {[...Array(3)].map((_, index) => (
-                <Box key={index}>
-                  <Skeleton variant="text" width="60%" height={32} />
-                  <Skeleton variant="text" width="40%" height={24} />
-                  <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 1 }} />
-                </Box>
-              ))}
-            </Stack>
-          </Paper>
-        ) : sortedTodos.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
-            {todos.length === 0 ? (
-              <Stack spacing={2} alignItems="center">
-                <Typography variant="h6" color="text.secondary">
-                  No todos yet
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Create your first todo to get started!
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Use the form below to create your first todo!
-                </Typography>
-              </Stack>
-            ) : (
-              <Stack spacing={2} alignItems="center">
-                <Typography variant="h6" color="text.secondary">
-                  No todos match your filters
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Try adjusting your search or filter criteria.
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setFilter({ status: 'all', priority: 'all', category: 'all' });
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </Stack>
-            )}
-          </Paper>
-        ) : (
-          <TodoList
-            onEditTodo={handleEditTodo}
-            filter={filter}
+          {/* Filters */}
+          <TodoFilters
             searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filter={filter}
+            onFilterChange={setFilter}
+            sort={sort}
+            onSortChange={setSort}
           />
-        )}
 
-        {/* Results Summary */}
-        {!loading && todos.length > 0 && (
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
-              Showing {sortedTodos.length} of {todos.length} todos
-              {searchQuery && ` matching "${searchQuery}"`}
-            </Typography>
-          </Paper>
-        )}
-      </Stack>
+          {/* Content */}
+          {loading ? (
+            <Paper sx={{ p: 4, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+              <Stack spacing={3}>
+                {[...Array(3)].map((_, index) => (
+                  <Box key={index}>
+                    <Skeleton variant="text" width="60%" height={40} />
+                    <Skeleton variant="text" width="40%" height={28} />
+                    <Skeleton variant="rectangular" width="100%" height={80} sx={{ mt: 2, borderRadius: 2 }} />
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+          ) : sortedTodos.length === 0 ? (
+            <Paper sx={{ 
+              p: 6, 
+              textAlign: 'center',
+              borderRadius: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
+            }}>
+              {todos.length === 0 ? (
+                <Stack spacing={3} alignItems="center">
+                  <Box sx={{ fontSize: 64, opacity: 0.3 }}>📝</Box>
+                  <Typography variant="h5" fontWeight="600" color="text.primary">
+                    No todos yet
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400 }}>
+                    Start organizing your tasks by creating your first todo. Click the + button to get started!
+                  </Typography>
+                </Stack>
+              ) : (
+                <Stack spacing={3} alignItems="center">
+                  <Box sx={{ fontSize: 64, opacity: 0.3 }}>🔍</Box>
+                  <Typography variant="h5" fontWeight="600" color="text.primary">
+                    No todos match your filters
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400 }}>
+                    Try adjusting your search or filter criteria to find what you're looking for.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setFilter({ status: 'all', priority: 'all', category: 'all' });
+                    }}
+                    sx={{
+                      borderRadius: 3,
+                      px: 4,
+                      py: 1.5,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                      }
+                    }}
+                  >
+                    Clear All Filters
+                  </Button>
+                </Stack>
+              )}
+            </Paper>
+          ) : (
+            <TodoList
+              onEditTodo={handleEditTodo}
+              filter={filter}
+              searchQuery={searchQuery}
+            />
+          )}
 
+          {/* Results Summary */}
+          {!loading && todos.length > 0 && (
+            <Paper sx={{ 
+              p: 3, 
+              borderRadius: 3,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
+            }}>
+              <Typography 
+                variant="body1" 
+                color="text.secondary" 
+                textAlign="center"
+                fontWeight="500"
+              >
+                Showing {sortedTodos.length} of {todos.length} todos
+                {searchQuery && (
+                  <Box component="span" sx={{ 
+                    color: 'primary.main',
+                    fontWeight: 600,
+                    ml: 1
+                  }}>
+                    matching "{searchQuery}"
+                  </Box>
+                )}
+              </Typography>
+            </Paper>
+          )}
+        </Stack>
 
+        {/* Floating Add Button */}
+        <FloatingAddButton onClick={() => setIsFormOpen(true)} />
+      </Container>
+      </Box>
 
       {/* Todo Form Dialog */}
-      <Dialog
-        open={isFormOpen}
-        onClose={handleFormCancel}
-        maxWidth="md"
-        fullWidth
-        fullScreen={isMobile}
-        PaperProps={{
-          sx: {
-            ...(isMobile && {
-              m: 0,
-              borderRadius: 0
-            })
-          }
-        }}
-      >
-        <DialogTitle>
-          {editingTodo ? 'Edit Todo' : 'Add New Todo'}
-        </DialogTitle>
-        <DialogContent dividers>
-          <TodoForm
-            open={isFormOpen}
-            onClose={handleFormCancel}
-            onSubmit={handleFormSubmit}
-            todo={editingTodo}
-          />
-        </DialogContent>
-      </Dialog>
+    <Dialog
+      open={isFormOpen}
+      onClose={handleFormCancel}
+      maxWidth="md"
+      fullWidth
+      fullScreen={isMobile}
+      PaperProps={{
+        sx: {
+          ...(isMobile && {
+            m: 0,
+            borderRadius: 0
+          })
+        }
+      }}
+    >
+      <DialogTitle>
+        {editingTodo ? 'Edit Todo' : 'Add New Todo'}
+      </DialogTitle>
+      <DialogContent dividers>
+        <TodoForm
+          open={isFormOpen}
+          onClose={handleFormCancel}
+          onSubmit={handleFormSubmit}
+          todo={editingTodo}
+        />
+      </DialogContent>
+    </Dialog>
 
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
+    {/* Snackbar for notifications */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={4000}
+      onClose={handleCloseSnackbar}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+    >
+      <Alert
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        severity={snackbar.severity}
+        variant="filled"
+        sx={{ width: '100%' }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+    </>
   );
 };
 

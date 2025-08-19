@@ -13,7 +13,11 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon
+  ListItemIcon,
+  Container,
+  Stack,
+  Zoom,
+  Fade
 } from '@mui/material';
 import {
   Book as BookIcon,
@@ -174,72 +178,194 @@ const StudyPage: React.FC = () => {
     .reduce((total, session) => total + session.duration, 0);
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Study Tracker
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Track your learning progress and study sessions
-        </Typography>
-      </Box>
-
-      {/* Study Timer */}
-      <Card sx={{ mb: 4 }}>
-        <CardHeader
-          avatar={
-            <Avatar sx={{ bgcolor: 'primary.main' }}>
-              <TimerIcon />
-            </Avatar>
-          }
-          title="Study Timer"
-          subheader="Track your current study session"
-        />
-        <CardContent>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography variant="h2" component="div" sx={{ fontFamily: 'monospace', mb: 2 }}>
-              {formatTime(currentTime)}
+    <Box sx={{ 
+      minHeight: '100vh',
+      backgroundColor: '#f5f5f5'
+    }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Stack spacing={4}>
+          {/* Header */}
+          <Box sx={{ textAlign: 'center', mb: 2 }}>
+            <Typography 
+              variant="h3" 
+              component="h1" 
+              sx={{
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 1
+              }}
+            >
+              Study Tracker
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-              {!timerRunning ? (
-                <Button
-                  variant="contained"
-                  startIcon={<PlayIcon />}
-                  onClick={handleStartTimer}
-                  color="success"
-                >
-                  Start
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  startIcon={<PauseIcon />}
-                  onClick={handlePauseTimer}
-                  color="warning"
-                >
-                  Pause
-                </Button>
-              )}
-              <Button
-                variant="outlined"
-                startIcon={<StopIcon />}
-                onClick={handleStopTimer}
-                disabled={currentTime === 0}
-              >
-                Stop
-              </Button>
-            </Box>
+            <Typography variant="h6" color="text.secondary">
+              Track your learning progress and study sessions
+            </Typography>
           </Box>
-        </CardContent>
-      </Card>
 
-      <Grid container spacing={3}>
-        {/* Study Goals */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardHeader title="Study Goals" />
-            <CardContent>
+          {/* Study Timer */}
+          <Zoom in={true} timeout={800}>
+            <Card sx={{ 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)'
+              }
+            }}>
+              <CardHeader
+                avatar={
+                  <Avatar sx={{ 
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}>
+                    <TimerIcon sx={{ color: 'white' }} />
+                  </Avatar>
+                }
+                title={
+                  <Typography variant="h5" sx={{ color: 'white', fontWeight: 600 }}>
+                    Study Timer
+                  </Typography>
+                }
+                subheader={
+                  <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Track your current study session
+                  </Typography>
+                }
+              />
+              <CardContent>
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Typography 
+                    variant="h1" 
+                    component="div" 
+                    sx={{ 
+                      fontFamily: 'monospace', 
+                      mb: 3,
+                      fontSize: { xs: '3rem', md: '4rem' },
+                      fontWeight: 300,
+                      textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    {formatTime(currentTime)}
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                    {!timerRunning ? (
+                      <Button
+                        variant="contained"
+                        startIcon={<PlayIcon />}
+                        onClick={handleStartTimer}
+                        sx={{
+                          bgcolor: 'rgba(76, 175, 80, 0.9)',
+                          color: 'white',
+                          px: 4,
+                          py: 1.5,
+                          borderRadius: 2,
+                          fontSize: '1.1rem',
+                          fontWeight: 600,
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          '&:hover': {
+                            bgcolor: 'rgba(76, 175, 80, 1)',
+                            transform: 'scale(1.05)'
+                          }
+                        }}
+                      >
+                        Start
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        startIcon={<PauseIcon />}
+                        onClick={handlePauseTimer}
+                        sx={{
+                          bgcolor: 'rgba(255, 152, 0, 0.9)',
+                          color: 'white',
+                          px: 4,
+                          py: 1.5,
+                          borderRadius: 2,
+                          fontSize: '1.1rem',
+                          fontWeight: 600,
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 152, 0, 1)',
+                            transform: 'scale(1.05)'
+                          }
+                        }}
+                      >
+                        Pause
+                      </Button>
+                    )}
+                    <Button
+                      variant="outlined"
+                      startIcon={<StopIcon />}
+                      onClick={handleStopTimer}
+                      disabled={currentTime === 0}
+                      sx={{
+                        color: 'white',
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        px: 4,
+                        py: 1.5,
+                        borderRadius: 2,
+                        fontSize: '1.1rem',
+                        fontWeight: 600,
+                        backdropFilter: 'blur(10px)',
+                        '&:hover': {
+                          borderColor: 'white',
+                          bgcolor: 'rgba(255, 255, 255, 0.1)',
+                          transform: 'scale(1.05)'
+                        },
+                        '&:disabled': {
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          borderColor: 'rgba(255, 255, 255, 0.3)'
+                        }
+                      }}
+                    >
+                      Stop
+                    </Button>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Zoom>
+
+          <Grid container spacing={3}>
+            {/* Study Goals */}
+            <Grid item xs={12} md={6}>
+              <Fade in={true} timeout={1000}>
+                <Card sx={{ 
+                  height: '100%',
+                  borderRadius: 3,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  border: '1px solid rgba(0,0,0,0.05)',
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+                  }
+                }}>
+                  <CardHeader 
+                    title={
+                      <Typography variant="h5" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+                        Study Goals
+                      </Typography>
+                    }
+                    sx={{
+                      background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                      color: 'white',
+                      '& .MuiCardHeader-title': {
+                        color: 'white'
+                      }
+                    }}
+                  />
+                  <CardContent sx={{ p: 3 }}>
               {studyGoals.map((goal) => {
                 const progress = (goal.completedHours / goal.targetHours) * 100;
                 return (
@@ -261,103 +387,233 @@ const StudyPage: React.FC = () => {
                   </Box>
                 );
               })}
-            </CardContent>
-          </Card>
-        </Grid>
+                  </CardContent>
+                </Card>
+              </Fade>
+            </Grid>
 
-        {/* Study Statistics */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardHeader title="Study Statistics" />
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', borderRadius: 2 }}>
-                    <Typography variant="h4" color="primary.contrastText">
-                      {Math.floor(totalStudyTime / 60)}h
-                    </Typography>
-                    <Typography variant="body2" color="primary.contrastText">
-                      Total Study Time
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
-                    <Typography variant="h4" color="success.contrastText">
-                      {studySessions.filter(s => s.completed).length}
-                    </Typography>
-                    <Typography variant="body2" color="success.contrastText">
-                      Sessions Completed
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', borderRadius: 2 }}>
-                    <Typography variant="h4" color="warning.contrastText">
-                      {new Set(studySessions.map(s => s.subject)).size}
-                    </Typography>
-                    <Typography variant="body2" color="warning.contrastText">
-                      Subjects
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'info.light', borderRadius: 2 }}>
-                    <Typography variant="h4" color="info.contrastText">
-                      {Math.round(totalStudyTime / studySessions.filter(s => s.completed).length) || 0}m
-                    </Typography>
-                    <Typography variant="body2" color="info.contrastText">
-                      Avg Session
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Recent Study Sessions */}
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title="Recent Study Sessions" />
-            <CardContent>
-              <List>
-                {studySessions.slice(0, 5).map((session) => (
-                  <ListItem key={session.id}>
-                    <ListItemIcon>
-                      <Avatar sx={{ bgcolor: getTypeColor(session.type), width: 32, height: 32 }}>
-                        {getTypeIcon(session.type)}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`${session.subject} - ${session.topic}`}
-                      secondary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                          <Chip
-                            label={session.type}
-                            size="small"
-                            variant="outlined"
-                          />
-                          <Typography variant="caption">
-                            {session.duration}min • {new Date(session.date).toLocaleDateString()}
+            {/* Study Statistics */}
+            <Grid item xs={12} md={6}>
+              <Fade in={true} timeout={1200}>
+                <Card sx={{ 
+                  height: '100%',
+                  borderRadius: 3,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  border: '1px solid rgba(0,0,0,0.05)',
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+                  }
+                }}>
+                  <CardHeader 
+                    title={
+                      <Typography variant="h5" sx={{ fontWeight: 600, color: 'white' }}>
+                        Study Statistics
+                      </Typography>
+                    }
+                    sx={{
+                      background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                      color: 'white'
+                    }}
+                  />
+                  <CardContent sx={{ p: 3 }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Box sx={{ 
+                          textAlign: 'center', 
+                          p: 3, 
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          borderRadius: 3,
+                          color: 'white',
+                          boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)'
+                          }
+                        }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                            {Math.floor(totalStudyTime / 60)}h
                           </Typography>
-                          {session.completed && (
-                            <CompleteIcon color="success" fontSize="small" />
-                          )}
+                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            Total Study Time
+                          </Typography>
                         </Box>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box sx={{ 
+                          textAlign: 'center', 
+                          p: 3, 
+                          background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                          borderRadius: 3,
+                          color: 'white',
+                          boxShadow: '0 4px 15px rgba(17, 153, 142, 0.3)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 6px 20px rgba(17, 153, 142, 0.4)'
+                          }
+                        }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                            {studySessions.filter(s => s.completed).length}
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            Sessions Completed
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box sx={{ 
+                          textAlign: 'center', 
+                          p: 3, 
+                          background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                          borderRadius: 3,
+                          color: '#8B4513',
+                          boxShadow: '0 4px 15px rgba(252, 182, 159, 0.3)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 6px 20px rgba(252, 182, 159, 0.4)'
+                          }
+                        }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                            {new Set(studySessions.map(s => s.subject)).size}
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                            Subjects
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box sx={{ 
+                          textAlign: 'center', 
+                          p: 3, 
+                          background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                          borderRadius: 3,
+                          color: '#2E8B57',
+                          boxShadow: '0 4px 15px rgba(168, 237, 234, 0.3)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 6px 20px rgba(168, 237, 234, 0.4)'
+                          }
+                        }}>
+                          <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                            {Math.round(totalStudyTime / studySessions.filter(s => s.completed).length) || 0}m
+                          </Typography>
+                          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                            Avg Session
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Fade>
+            </Grid>
 
-
-
-
+            {/* Recent Study Sessions */}
+            <Grid item xs={12}>
+              <Fade in={true} timeout={1400}>
+                <Card sx={{
+                  borderRadius: 3,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  border: '1px solid rgba(0,0,0,0.05)',
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+                  }
+                }}>
+                  <CardHeader 
+                    title={
+                      <Typography variant="h5" sx={{ fontWeight: 600, color: 'white' }}>
+                        Recent Study Sessions
+                      </Typography>
+                    }
+                    sx={{
+                      background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                      color: 'white'
+                    }}
+                  />
+                  <CardContent sx={{ p: 0 }}>
+                    <List sx={{ p: 0 }}>
+                      {studySessions.slice(0, 5).map((session, index) => (
+                        <Fade in={true} timeout={1600 + index * 200} key={session.id}>
+                          <ListItem sx={{
+                            py: 2,
+                            px: 3,
+                            borderBottom: index < 4 ? '1px solid rgba(0,0,0,0.05)' : 'none',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              bgcolor: 'rgba(0,0,0,0.02)',
+                              transform: 'translateX(8px)'
+                            }
+                          }}>
+                            <ListItemIcon>
+                              <Avatar sx={{ 
+                                bgcolor: getTypeColor(session.type), 
+                                width: 40, 
+                                height: 40,
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                  transform: 'scale(1.1)'
+                                }
+                              }}>
+                                {getTypeIcon(session.type)}
+                              </Avatar>
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                  {session.subject} - {session.topic}
+                                </Typography>
+                              }
+                              secondary={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                                  <Chip
+                                    label={session.type}
+                                    size="small"
+                                    sx={{
+                                      bgcolor: getTypeColor(session.type),
+                                      color: 'white',
+                                      fontWeight: 600,
+                                      textTransform: 'capitalize'
+                                    }}
+                                  />
+                                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                    {session.duration}min • {new Date(session.date).toLocaleDateString()}
+                                  </Typography>
+                                  {session.completed && (
+                                    <CompleteIcon 
+                                      color="success" 
+                                      fontSize="small" 
+                                      sx={{ 
+                                        animation: 'pulse 2s infinite',
+                                        '@keyframes pulse': {
+                                          '0%': { opacity: 1 },
+                                          '50%': { opacity: 0.5 },
+                                          '100%': { opacity: 1 }
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        </Fade>
+                      ))}
+                    </List>
+                  </CardContent>
+                </Card>
+              </Fade>
+            </Grid>
+          </Grid>
+        </Stack>
+      </Container>
     </Box>
   );
 };

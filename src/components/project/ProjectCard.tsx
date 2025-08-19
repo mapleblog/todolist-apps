@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Card,
   CardContent,
-  CardActions,
   Typography,
   Box,
   LinearProgress,
@@ -20,7 +19,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-
   Fade,
   Grow
 } from '@mui/material';
@@ -38,7 +36,30 @@ import {
   TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
 import { Project } from '../../services/projectService';
-import { format, formatDistanceToNow, isBefore } from 'date-fns';
+import { format, formatDistanceToNow, isBefore, isToday, isYesterday } from 'date-fns';
+
+// Custom time formatting function for better UX
+const formatUpdateTime = (date: Date): string => {
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+  
+  if (diffInMinutes < 1) {
+    return 'Just now';
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes}m ago`;
+  } else if (isToday(date)) {
+    return `Today at ${format(date, 'HH:mm')}`;
+  } else if (isYesterday(date)) {
+    return `Yesterday at ${format(date, 'HH:mm')}`;
+  } else {
+    const diffInDays = Math.floor(diffInMinutes / (60 * 24));
+    if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    } else {
+      return format(date, 'MMM d, yyyy');
+    }
+  }
+};
 
 
 interface ProjectCardProps {
@@ -109,6 +130,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
+
+
   const getStatusIcon = (status: Project['status']) => {
     switch (status) {
       case 'active':
@@ -151,16 +174,102 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     <>
       <Grow in timeout={300}>
         <Card
-          sx={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+          sx={{ 
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: 4,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            cursor: 'pointer',
+            position: 'relative',
+            overflow: 'hidden',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 50%, rgba(240,245,251,0.95) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.08)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 50%, #64b5f6 100%)',
+              opacity: 0,
+              transition: 'opacity 0.3s ease'
+            },
+            '&:hover': {
+              transform: 'translateY(-6px) scale(1.015)',
+              boxShadow: '0 16px 32px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.1)',
+              '&::before': {
+                opacity: 1
+              },
+              '& .project-card-overlay': {
+                opacity: 1
+              },
+              '& .project-card-actions': {
+                transform: 'translateY(0)',
+                opacity: 1
+              },
+              '& .project-progress': {
+                transform: 'scaleX(1.02)'
+              }
+            }
+          }}
           onClick={() => handleView()}
         >
-          <CardContent sx={{ flexGrow: 1 }}>
+          <CardContent 
+            className="project-card-content"
+            sx={{ 
+              flexGrow: 1, 
+              p: { xs: 2.5, sm: 3 },
+              pb: 1,
+              transition: 'background 0.3s ease',
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '4px',
+                background: `linear-gradient(90deg, ${project.color} 0%, ${project.color}60 100%)`,
+                borderRadius: '0 0 12px 12px',
+                boxShadow: `0 2px 8px ${project.color}30`,
+              },
+            }}>
             {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'flex-start', 
+              mb: { xs: 1.5, sm: 2 },
+              flexWrap: { xs: 'wrap', sm: 'nowrap' },
+              gap: { xs: 1, sm: 0 }
+            }}>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: { xs: 1, sm: 1.5 }, 
+                flexGrow: 1,
+                minWidth: 0,
+                width: { xs: '100%', sm: 'auto' }
+              }}>
                 <Fade in timeout={500}>
                   <div>
-                    <Avatar sx={{ bgcolor: project.color }}>
+                    <Avatar 
+                      className="project-avatar"
+                      sx={{ 
+                        bgcolor: project.color,
+                        width: { xs: 40, sm: 48 },
+                        height: { xs: 40, sm: 48 },
+                        fontSize: { xs: '1rem', sm: '1.2rem' },
+                        fontWeight: 600,
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        border: '2px solid rgba(255,255,255,0.8)'
+                      }}
+                    >
                       {project.name.charAt(0).toUpperCase()}
                     </Avatar>
                   </div>
@@ -171,10 +280,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                     component="h3"
                     sx={{
                       fontWeight: 600,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.9rem', sm: '1rem' },
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      lineHeight: 1.2
                     }}
                   >
                     {project.name}
@@ -184,9 +294,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <IconButton
               size="small"
               onClick={handleMenuOpen}
-              sx={{ ml: 1 }}
+              sx={{ 
+                ml: { xs: 0, sm: 1 },
+                alignSelf: { xs: 'flex-start', sm: 'center' },
+                p: { xs: 0.5, sm: 1 }
+              }}
             >
-              <MoreVertIcon />
+              <MoreVertIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
             </IconButton>
           </Box>
 
@@ -196,12 +310,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               variant="body2"
               color="text.secondary"
               sx={{
-                mb: 2,
+                mb: { xs: 1.5, sm: 2 },
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical'
+                WebkitLineClamp: { xs: 1, sm: 2 },
+                WebkitBoxOrient: 'vertical',
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                lineHeight: { xs: 1.3, sm: 1.4 }
               }}
             >
               {project.description}
@@ -209,20 +325,116 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
 
             {/* Status and Due Date */}
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
               <Chip
-                icon={getStatusIcon(project.status) ?? undefined}
-                label={project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
+                label={project.status}
                 size="small"
-                sx={{ fontWeight: 600 }}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  height: 28,
+                  borderRadius: 2,
+                  textTransform: 'capitalize',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                    transition: 'left 0.5s ease'
+                  },
+                  '&:hover::before': {
+                    left: '100%'
+                  },
+                  ...(project.status === 'active' && {
+                    background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(76,175,80,0.3)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 16px rgba(76,175,80,0.4)'
+                    }
+                  }),
+                  ...(project.status === 'completed' && {
+                    background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(25,118,210,0.3)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 16px rgba(25,118,210,0.4)'
+                    }
+                  }),
+                  ...(project.status === 'on-hold' && {
+                    background: 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(255,152,0,0.3)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 16px rgba(255,152,0,0.4)'
+                    }
+                  })
+                }}
               />
             {dueDateStatus && (
               <Chip
                 icon={<ScheduleIcon />}
                 label={dueDateStatus.text}
-                color={dueDateStatus.color as any}
                 size="small"
                 variant="outlined"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  height: 28,
+                  borderRadius: 2,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                    transition: 'left 0.5s ease'
+                  },
+                  '&:hover::before': {
+                    left: '100%'
+                  },
+                  ...(dueDateStatus.color === 'error' ? {
+                    background: 'linear-gradient(135deg, #f44336 0%, #ef5350 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(244,67,54,0.3)',
+                    animation: 'pulse 2s infinite',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 16px rgba(244,67,54,0.4)'
+                    }
+                  } : {
+                    background: 'linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(33,150,243,0.3)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 16px rgba(33,150,243,0.4)'
+                    }
+                  }),
+                  '& .MuiChip-icon': {
+                    fontSize: '1rem',
+                    marginLeft: '8px',
+                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
+                  },
+                  '@keyframes pulse': {
+                    '0%, 100%': { opacity: 1 },
+                    '50%': { opacity: 0.8 }
+                  }
+                }}
               />
             )}
           </Stack>
@@ -230,53 +442,178 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           {/* Progress */}
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 Progress
               </Typography>
-              <Typography variant="body2" fontWeight="medium">
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 700, 
+                  color: 'primary.main',
+                  fontSize: '0.9rem',
+                  background: 'linear-gradient(45deg, #1976d2, #42a5f5)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
                 {project.progress}%
               </Typography>
             </Box>
-              <LinearProgress
-                variant="determinate"
-                value={project.progress}
-                sx={{ borderRadius: 1 }}
+            <Box sx={{ position: 'relative' }}>
+              <LinearProgress 
+                variant="determinate" 
+                value={project.progress} 
+                className="project-progress"
+                sx={{ 
+                  height: 10,
+                  borderRadius: 6,
+                  backgroundColor: 'rgba(0,0,0,0.06)',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+                  transition: 'transform 0.3s ease',
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 6,
+                    background: `linear-gradient(90deg, 
+                      ${project.progress < 30 ? '#f44336, #ff5722' : 
+                        project.progress < 70 ? '#ff9800, #ffc107' : '#4caf50, #8bc34a'})`,
+                    boxShadow: `0 2px 8px ${project.progress < 30 ? 'rgba(244,67,54,0.3)' : 
+                      project.progress < 70 ? 'rgba(255,152,0,0.3)' : 'rgba(76,175,80,0.3)'}`,
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                      animation: 'shimmer 2s infinite'
+                    }
+                  },
+                  '@keyframes shimmer': {
+                    '0%': { transform: 'translateX(-100%)' },
+                    '100%': { transform: 'translateX(100%)' }
+                  }
+                }}
               />
+              {project.progress >= 100 && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    right: 8,
+                    transform: 'translateY(-50%)',
+                    color: 'white',
+                    fontSize: '0.7rem'
+                  }}
+                >
+                  ✓
+                </Box>
+              )}
+            </Box>
           </Box>
 
-          {/* Tasks Info */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <TaskIcon fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary">
-                {project.completedTasks}/{project.tasksCount} tasks
-              </Typography>
+          {/* Project Info Footer */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: 1.5,
+            mt: 2,
+            pt: 2,
+            borderTop: '1px solid',
+            borderColor: 'divider'
+          }}>
+            {/* Tasks Summary */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              px: 1
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TaskIcon 
+                  fontSize="small" 
+                  sx={{ 
+                    color: 'primary.main',
+                    p: 0.5,
+                    borderRadius: 1,
+                    bgcolor: 'primary.50'
+                  }} 
+                />
+                <Box>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: 600,
+                      color: 'text.primary',
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {project.completedTasks}/{project.tasksCount} Tasks
+                  </Typography>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontSize: '0.7rem'
+                    }}
+                  >
+                    {project.tasksCount > 0 
+                      ? `${Math.round((project.completedTasks / project.tasksCount) * 100)}% complete`
+                      : 'No tasks yet'
+                    }
+                  </Typography>
+                </Box>
+              </Box>
+              
+              {/* Action Button */}
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMenuOpen(e);
+                }}
+                sx={{ 
+                  color: 'text.secondary',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    color: 'primary.main',
+                    bgcolor: 'primary.50',
+                    transform: 'scale(1.1)'
+                  }
+                }}
+              >
+                <MoreVertIcon />
+              </IconButton>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <TrendingUpIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
-                Updated {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}
+            
+            {/* Last Updated */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              px: 1,
+              py: 0.5,
+              borderRadius: 1,
+              bgcolor: 'grey.50'
+            }}>
+              <TrendingUpIcon sx={{ 
+                fontSize: 16, 
+                color: 'success.main',
+                opacity: 0.8
+              }} />
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontWeight: 500,
+                  fontSize: '0.75rem'
+                }}
+              >
+                Last updated {formatUpdateTime(new Date(project.updatedAt))}
               </Typography>
             </Box>
           </Box>
-          <CardActions sx={{ justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <TrendingUpIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
-                Updated {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}
-              </Typography>
-            </Box>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleMenuOpen(e);
-              }}
-              sx={{ color: 'text.secondary' }}
-            >
-              <MoreVertIcon />
-            </IconButton>
-          </CardActions>
         </CardContent>
         </Card>
       </Grow>

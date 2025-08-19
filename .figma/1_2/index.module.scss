@@ -1,0 +1,45 @@
+* {
+  box-sizing: border-box;
+}
+
+.background {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafafa;
+  padding-right: 32px;
+  width: 685px;
+  height: 492px;
+  overflow: hidden;
+
+  .a01 {
+    width: 343px;
+    height: 492px;
+  }
+
+  .group4 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    .buildYourOwnTeamLibr {
+      width: 276px;
+      line-height: 44px;
+      letter-spacing: -0.72px;
+      color: #000000;
+      font-family: Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
+      font-size: 38px;
+      font-weight: 700;
+    }
+
+    .donTReinventTheWheel {
+      margin: 18px 0px 0px;
+      width: 278px;
+      line-height: 24px;
+      letter-spacing: -0.08px;
+      color: #000000cc;
+      font-family: Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimHei, Arial, Helvetica, sans-serif;
+      font-size: 14px;
+    }
+  }
+}

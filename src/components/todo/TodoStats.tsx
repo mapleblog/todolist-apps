@@ -174,7 +174,7 @@ const TodoStats: React.FC<TodoStatsProps> = ({ compact = false }) => {
   }
 
   return (
-    <Paper sx={{ p: 3, mb: 3 }}>
+    <Paper sx={{ p: 2, mb: 2 }}>
       <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
         <TrendingUpIcon />
         Todo Statistics

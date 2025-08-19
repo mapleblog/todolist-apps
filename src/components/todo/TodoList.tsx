@@ -1,36 +1,39 @@
 import React, { useState } from 'react';
 import {
   Box,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  Checkbox,
-  IconButton,
+  Card,
+  CardContent,
+  CardActions,
+  Grid,
   Typography,
   Chip,
+  IconButton,
+  Checkbox,
   Menu,
   MenuItem,
-  Divider,
-  Collapse,
+  ListItemIcon,
+  ListItemText,
   Alert,
   CircularProgress,
-  Paper,
-  Stack
+  Stack,
+  LinearProgress,
+  Collapse,
+  Avatar,
+  Tooltip,
+  Paper
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Flag as FlagIcon,
-  Schedule as ScheduleIcon,
   CheckCircle as CheckCircleIcon,
   RadioButtonUnchecked as RadioButtonUncheckedIcon,
   ExpandLess,
   ExpandMore,
-  Folder as FolderIcon
+  Folder as FolderIcon,
+  Assignment as AssignmentIcon,
+  CalendarToday as CalendarTodayIcon
 } from '@mui/icons-material';
 import { useTodos } from '../../hooks/useTodos';
 import { Todo, TodoPriority, TodoFilter } from '../../types';
@@ -241,161 +244,223 @@ const TodoList: React.FC<TodoListProps> = ({
         const categoryTodos = groupedTodos[category];
         const isExpanded = expandedCategories.has(category);
         const completedCount = categoryTodos.filter(todo => todo.completed).length;
+        const completionRate = (completedCount / categoryTodos.length) * 100;
         
         return (
-          <Paper key={category} sx={{ mb: 2, overflow: 'hidden' }}>
+          <Box key={category} sx={{ mb: 4 }}>
             {/* Category Header */}
-            <ListItemButton
-              onClick={() => toggleCategoryExpansion(category)}
-              sx={{
-                backgroundColor: 'action.hover',
-                borderBottom: '1px solid',
-                borderColor: 'divider'
+            <Card 
+              sx={{ 
+                mb: 2, 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                }
               }}
+              onClick={() => toggleCategoryExpansion(category)}
             >
-              <ListItemIcon>
-                <FolderIcon color="primary" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography variant="subtitle1" fontWeight="medium">
-                      {category}
-                    </Typography>
+              <CardContent sx={{ py: 2 }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+                      <FolderIcon />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" fontWeight="600">
+                        {category}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                        {categoryTodos.length} task{categoryTodos.length !== 1 ? 's' : ''}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  
+                  <Stack alignItems="flex-end" spacing={1}>
                     <Chip
                       label={`${completedCount}/${categoryTodos.length}`}
                       size="small"
-                      variant="outlined"
-                      sx={{ fontSize: '0.75rem', height: 20 }}
+                      sx={{
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        fontWeight: 600
+                      }}
                     />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                        {Math.round(completionRate)}%
+                      </Typography>
+                      {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                    </Box>
                   </Stack>
-                }
-              />
-              {isExpanded ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
+                </Stack>
+                
+                <LinearProgress
+                  variant="determinate"
+                  value={completionRate}
+                  sx={{
+                    mt: 2,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: 'white',
+                      borderRadius: 3
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
 
-            {/* Category Todos */}
+            {/* Category Todos Grid */}
             <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-              <List disablePadding>
-                {categoryTodos.map((todo, index) => {
+              <Grid container spacing={2}>
+                {categoryTodos.map((todo) => {
                   const dueDateInfo = todo.dueDate ? formatDueDate(todo.dueDate) : null;
                   
                   return (
-                    <React.Fragment key={todo.id}>
-                      <ListItem
-                        disablePadding
+                    <Grid item xs={12} sm={6} md={4} key={todo.id}>
+                      <Card
                         sx={{
-                          opacity: todo.completed ? 0.6 : 1,
-                          backgroundColor: todo.completed ? 'action.hover' : 'transparent'
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          position: 'relative',
+                          transition: 'all 0.3s ease-in-out',
+                          opacity: todo.completed ? 0.7 : 1,
+                          transform: todo.completed ? 'scale(0.98)' : 'scale(1)',
+                          '&:hover': {
+                            transform: todo.completed ? 'scale(0.98)' : 'translateY(-4px)',
+                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                          },
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 4,
+                            background: getPriorityColor(todo.priority || 'low'),
+                            borderRadius: '4px 4px 0 0'
+                          }
                         }}
                       >
-                        <ListItemButton
-                          onClick={() => handleToggleComplete(todo)}
-                          sx={{ pl: 4 }}
-                        >
-                          <ListItemIcon sx={{ minWidth: 40 }}>
+                        <CardContent sx={{ flexGrow: 1, pt: 3 }}>
+                          {/* Task Header */}
+                          <Stack direction="row" alignItems="flex-start" spacing={1} sx={{ mb: 2 }}>
                             <Checkbox
-                              edge="start"
                               checked={todo.completed}
-                              tabIndex={-1}
-                              disableRipple
+                              onChange={() => handleToggleComplete(todo)}
                               icon={<RadioButtonUncheckedIcon />}
                               checkedIcon={<CheckCircleIcon />}
                               sx={{
-                                color: todo.completed ? 'success.main' : 'action.active',
+                                color: 'action.active',
                                 '&.Mui-checked': {
                                   color: 'success.main'
-                                }
+                                },
+                                mt: -0.5
                               }}
                             />
-                          </ListItemIcon>
-                          
-                          <ListItemText
-                            primary={
+                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                               <Typography
-                                variant="body1"
+                                variant="h6"
                                 sx={{
                                   textDecoration: todo.completed ? 'line-through' : 'none',
-                                  fontWeight: todo.completed ? 'normal' : 'medium'
+                                  fontWeight: 600,
+                                  fontSize: '1rem',
+                                  lineHeight: 1.3,
+                                  color: todo.completed ? 'text.secondary' : 'text.primary'
                                 }}
                               >
                                 {todo.title}
                               </Typography>
-                            }
-                            secondary={
-                              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
-                                {todo.description && (
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      maxWidth: 200
-                                    }}
-                                  >
-                                    {todo.description}
-                                  </Typography>
-                                )}
-                                
-                                {todo.priority && todo.priority !== 'low' && (
-                                  <Chip
-                                    icon={<FlagIcon />}
-                                    label={getPriorityLabel(todo.priority)}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: getPriorityColor(todo.priority),
-                                      color: 'white',
-                                      fontSize: '0.7rem',
-                                      height: 20
-                                    }}
-                                  />
-                                )}
-                                
-                                {dueDateInfo && (
-                                  <Chip
-                                    icon={<ScheduleIcon />}
-                                    label={dueDateInfo.text}
-                                    size="small"
-                                    variant={dueDateInfo.urgent ? 'filled' : 'outlined'}
-                                    sx={{
-                                      color: dueDateInfo.color,
-                                      borderColor: dueDateInfo.color,
-                                      backgroundColor: dueDateInfo.urgent ? dueDateInfo.color : 'transparent',
-                                      '& .MuiChip-label': {
-                                        color: dueDateInfo.urgent ? 'white' : dueDateInfo.color
-                                      },
-                                      fontSize: '0.7rem',
-                                      height: 20
-                                    }}
-                                  />
-                                )}
-                              </Stack>
-                            }
-                          />
+                              
+                              {todo.description && (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{
+                                    mt: 1,
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                  }}
+                                >
+                                  {todo.description}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Stack>
                           
-                          <ListItemSecondaryAction>
+                          {/* Task Metadata */}
+                          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            {todo.priority && (
+                              <Chip
+                                icon={<FlagIcon />}
+                                label={getPriorityLabel(todo.priority)}
+                                size="small"
+                                sx={{
+                                  backgroundColor: getPriorityColor(todo.priority),
+                                  color: 'white',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 500
+                                }}
+                              />
+                            )}
+                            
+                            {dueDateInfo && (
+                              <Chip
+                                icon={<CalendarTodayIcon />}
+                                label={dueDateInfo.text}
+                                size="small"
+                                variant={dueDateInfo.urgent ? 'filled' : 'outlined'}
+                                sx={{
+                                  color: dueDateInfo.color,
+                                  borderColor: dueDateInfo.color,
+                                  backgroundColor: dueDateInfo.urgent ? dueDateInfo.color : 'transparent',
+                                  '& .MuiChip-label': {
+                                    color: dueDateInfo.urgent ? 'white' : dueDateInfo.color,
+                                    fontWeight: 500
+                                  },
+                                  fontSize: '0.75rem'
+                                }}
+                              />
+                            )}
+                          </Stack>
+                        </CardContent>
+                        
+                        <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            <AssignmentIcon sx={{ fontSize: 14, mr: 0.5, verticalAlign: 'middle' }} />
+                            Task #{todo.id.slice(-6)}
+                          </Typography>
+                          
+                          <Tooltip title="More options">
                             <IconButton
-                              edge="end"
                               size="small"
                               onClick={(e) => handleMenuOpen(e, todo)}
+                              sx={{
+                                '&:hover': {
+                                  backgroundColor: 'action.hover'
+                                }
+                              }}
                             >
                               <MoreVertIcon />
                             </IconButton>
-                          </ListItemSecondaryAction>
-                        </ListItemButton>
-                      </ListItem>
-                      
-                      {index < categoryTodos.length - 1 && (
-                        <Divider variant="inset" component="li" sx={{ ml: 4 }} />
-                      )}
-                    </React.Fragment>
+                          </Tooltip>
+                        </CardActions>
+                      </Card>
+                    </Grid>
                   );
                 })}
-              </List>
+              </Grid>
             </Collapse>
-          </Paper>
+          </Box>
         );
       })}
 
