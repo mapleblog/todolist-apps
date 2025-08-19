@@ -6,7 +6,6 @@ import {
   Button,
   Stack,
   Alert,
-  Fab,
   Collapse,
   IconButton,
   Chip,
@@ -20,11 +19,9 @@ import {
   Skeleton,
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Search as SearchIcon,
   FilterList as FilterIcon,
   Sort as SortIcon,
-
 } from '@mui/icons-material';
 import { Task, TaskStatus, CreateTaskData, UpdateTaskData, TaskFilters, TaskSortBy } from '@/types';
 import TaskCard from './TaskCard';
@@ -219,6 +216,21 @@ const TaskList: React.FC<TaskListProps> = ({ projectId, onTaskCountChange }) => 
             >
               {sortOrder === 'asc' ? 'Oldest' : 'Newest'}
             </Button>
+            <Button
+              variant="contained"
+              onClick={() => setFormOpen(true)}
+              size="small"
+              sx={{
+                borderRadius: 2,
+                px: 2,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                },
+              }}
+            >
+              New Task
+            </Button>
           </Stack>
         </Box>
 
@@ -307,6 +319,8 @@ const TaskList: React.FC<TaskListProps> = ({ projectId, onTaskCountChange }) => 
         </Alert>
       )}
 
+
+
       {/* Task Groups */}
       {tasks.length === 0 ? (
         <Paper sx={{ 
@@ -329,7 +343,6 @@ const TaskList: React.FC<TaskListProps> = ({ projectId, onTaskCountChange }) => 
             <Button
               variant="contained"
               size="large"
-              startIcon={<AddIcon />}
               onClick={() => setFormOpen(true)}
               sx={{
                 borderRadius: 3,
@@ -406,23 +419,7 @@ const TaskList: React.FC<TaskListProps> = ({ projectId, onTaskCountChange }) => 
         </Stack>
       )}
 
-      {/* Floating Add Button */}
-      <Fab
-        color="primary"
-        aria-label="add task"
-        onClick={() => setFormOpen(true)}
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-          },
-        }}
-      >
-        <AddIcon />
-      </Fab>
+
 
       {/* Task Form */}
       <TaskForm
