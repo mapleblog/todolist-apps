@@ -18,7 +18,6 @@ import {
   Dashboard as DashboardIcon,
   FolderOpen as ProjectsIcon,
   Assignment as TasksIcon,
-  School as StudyIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   Logout as LogoutIcon,
@@ -54,11 +53,6 @@ const menuItems: MenuItem[] = [
     id: 'tasks',
     label: 'Tasks',
     icon: <TasksIcon />
-  },
-  {
-    id: 'study',
-    label: 'Study',
-    icon: <StudyIcon />
   }
 ];
 

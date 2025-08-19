@@ -8,7 +8,7 @@ import {
 
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from './Sidebar';
-import { DashboardPage, ProjectsPage, StudyPage, TodoPage } from '../../pages';
+import { DashboardPage, ProjectsPage, TodoPage } from '../../pages';
 import ProjectDetailPage from '../../pages/ProjectDetailPage';
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -72,8 +72,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         );
       case 'tasks':
         return <TodoPage />;
-      case 'study':
-        return <StudyPage />;
       default:
         return <DashboardPage />;
     }
